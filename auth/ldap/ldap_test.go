@@ -1,4 +1,4 @@
-package auth
+package ldap
 
 import "testing"
 
@@ -11,7 +11,7 @@ func TestLDAPAuthProvider_Authenticate(t *testing.T) {
     BindDN: "cn=read-only-admin,dc=example,dc=com",
     BindPassword: "password",
     UserFilter:   "(uid=%s)",
-    Base: "dc=example,dc=com",
+    BaseDN: "dc=example,dc=com",
   }
 
   ldapAuthProvider.Connect()

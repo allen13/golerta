@@ -1,0 +1,11 @@
+[golerta]
+    signing_key = "AllYourBase"
+    auth_provider = "ldap"
+
+[ldap]
+    host = "ldap.forumsys.com"
+    port = 389
+    base_dn = "dc=example,dc=com"
+    bind_dn = "cn=read-only-admin,dc=example,dc=com"
+    bind_password = "password"
+    user_filter = "(uid=%s)"

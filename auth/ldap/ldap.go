@@ -1,4 +1,4 @@
-package auth
+package ldap
 
 import (
   "crypto/tls"
@@ -16,11 +16,10 @@ type LDAPAuthProvider struct {
   Host         string `toml:"host"`
   Port         int `toml:"port"`
   UseSSL       bool `toml:"use_ssl"`
+  BaseDN       string `toml:"base_dn"`
   BindDN       string `toml:"bind_dn"`
   BindPassword string `toml:"bind_password"`
-  GroupFilter  string `toml:"group_filter"`
   UserFilter   string `toml:"user_filter"`
-  Base         string `toml:"base"`
   Attributes   []string `toml:"attributes"`
 }
 
@@ -29,6 +28,16 @@ type LoginRequest struct {
   Password string `json:"password"`
 }
 
+//JSON struct that holds generated authorization token
+type AuthToken struct {
+  Token string `json:"token"`
+}
+
+//JSON struct for login errors
+type LoginError struct {
+  Status string  `json:"status"`
+  Message string `json:"message"`
+}
 
 // Handles login request
 func (lc *LDAPAuthProvider) LoginHandler(ctx *iris.Context) {
@@ -129,7 +138,7 @@ func (lc *LDAPAuthProvider) Authenticate(username, password string) (bool, error
   attributes := append(lc.Attributes, "dn")
   // Search for the given username
   searchRequest := ldap.NewSearchRequest(
-    lc.Base,
+    lc.BaseDN,
     ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
     fmt.Sprintf(lc.UserFilter, username),
     attributes,
