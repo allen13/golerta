@@ -6,6 +6,8 @@ import (
   r "gopkg.in/dancannon/gorethink.v2"
 )
 
+//Integration test for alert CRUD operations
+//docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
 func TestRethinkDB_CRUDAlert(t *testing.T) {
   db := getTestDB(t)
 
