@@ -4,10 +4,11 @@ import (
   "github.com/dgrijalva/jwt-go"
   jwtmiddleware "github.com/iris-contrib/middleware/jwt"
   "github.com/kataras/iris"
-  "github.com/allen13/golerta/auth"
+  "github.com/allen13/golerta/app/auth"
   "github.com/docopt/docopt-go"
-  "github.com/allen13/golerta/config"
+  "github.com/allen13/golerta/app/config"
   "github.com/allen13/golerta/app"
+  "github.com/prometheus/common/log"
 )
 
 const version = "Golerta 0.0.1"
@@ -30,6 +31,10 @@ func main() {
   config := config.BuildConfig(configFile)
 
   golerta := iris.New()
+
+  if config.Golerta.SigningKey == "" {
+    log.Fatal("Shutting down, signing key must be provided.")
+  }
 
   authorizationMiddleware := buildAuthorizationMiddleware(config.Golerta.SigningKey)
 

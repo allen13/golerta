@@ -4,6 +4,16 @@
 	"GodepVersion": "v74",
 	"Deps": [
 		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.2.0-21-g9906417",
+			"Rev": "99064174e013895bbd9b025c31100bd1d9b590ca"
+		},
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.9.0-15-g219c8cb",
+			"Rev": "219c8cb75c258c552e999735be6df753ffc7afdc"
+		},
+		{
 			"ImportPath": "github.com/ajg/form",
 			"Rev": "7ff89c75808766205bfa4411abb436c98c33eb5e"
 		},
@@ -15,6 +25,11 @@
 			"ImportPath": "github.com/dgrijalva/jwt-go",
 			"Comment": "v3.0.0-4-g01aeca5",
 			"Rev": "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
+		},
+		{
+			"ImportPath": "github.com/docopt/docopt-go",
+			"Comment": "0.6.2",
+			"Rev": "784ddc588536785e7299f7272f39101f7faccc3f"
 		},
 		{
 			"ImportPath": "github.com/fatih/structs",
@@ -171,6 +186,10 @@
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
+			"ImportPath": "github.com/prometheus/common/log",
+			"Rev": "e8eabff8812b05acf522b45fdcd725a785188e37"
+		},
+		{
 			"ImportPath": "github.com/russross/blackfriday",
 			"Comment": "v1.4-38-g93622da",
 			"Rev": "93622da34e54fb6529bfb7c57e710f37a8d9cbd8"
@@ -247,6 +266,16 @@
 		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
+		},
+		{
+			"ImportPath": "gopkg.in/asn1-ber.v1",
+			"Comment": "v1.1",
+			"Rev": "4e86f4367175e39f69d9358a5f17b4dda270378d"
+		},
+		{
+			"ImportPath": "gopkg.in/ldap.v2",
+			"Comment": "v2.4.0",
+			"Rev": "537128fee7cca108d8ce74e4309fdfcdd9c7f496"
 		}
 	]
 }
