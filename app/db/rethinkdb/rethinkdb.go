@@ -1,7 +1,6 @@
 package rethinkdb
 
 import (
-  "errors"
   r "gopkg.in/dancannon/gorethink.v2"
   "github.com/allen13/golerta/app/models"
 )
@@ -41,12 +40,9 @@ func (re* RethinkDB) CreateDBIfNotExist()(error){
   }
 
   if !exists{
-    resp, err := r.DBCreate(re.Database).RunWrite(re.session)
+    _, err := r.DBCreate(re.Database).RunWrite(re.session)
     if err != nil {
       return err
-    }
-    if resp.DBsCreated < 1{
-      return errors.New("Failed to create alert database")
     }
   }
 
@@ -60,12 +56,9 @@ func (re* RethinkDB) CreateTableIfNotExist(table string)(error){
   }
 
   if !exists{
-    resp, err := r.DB(re.Database).TableCreate(table).RunWrite(re.session)
+    _, err := r.DB(re.Database).TableCreate(table).RunWrite(re.session)
     if err != nil {
       return err
-    }
-    if resp.TablesCreated < 1{
-      return errors.New("Failed to create alert table")
     }
   }
 
@@ -119,7 +112,13 @@ func (re* RethinkDB) TableExists(table string)(bool, error){
 //Create alert and return generated id
 func (re* RethinkDB) CreateAlert(alert models.Alert)(string, error){
   ids, err := re.CreateAlerts([]models.Alert{alert})
-  return ids[0], err
+  if err != nil{
+    return "", err
+  }
+  if len(ids) < 1{
+    return alert.Id, nil
+  }
+  return ids[0], nil
 }
 
 //Create alerts and return generated ids
@@ -127,9 +126,6 @@ func (re* RethinkDB) CreateAlerts(alerts []models.Alert)(ids []string, err error
   writeResponse, err := r.DB(re.Database).Table("alerts").Insert(alerts).RunWrite(re.session)
   if err != nil {
     return ids, err
-  }
-  if writeResponse.Inserted < 1 {
-    return ids, errors.New("Failed to create alert")
   }
   return writeResponse.GeneratedKeys, nil
 }
@@ -157,12 +153,9 @@ func (re* RethinkDB) GetAlert(id string)(alert models.Alert, err error) {
 }
 
 func (re* RethinkDB) DeleteAlert(id string)(error) {
-  writeResponse, err := r.DB(re.Database).Table("alerts").Get(id).Delete().RunWrite(re.session)
+  _, err := r.DB(re.Database).Table("alerts").Get(id).Delete().RunWrite(re.session)
   if err != nil {
     return err
-  }
-  if writeResponse.Deleted < 1{
-    return errors.New("Failed to delete alert")
   }
   return nil
 }

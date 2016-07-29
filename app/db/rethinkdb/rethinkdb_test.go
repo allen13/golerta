@@ -7,7 +7,6 @@ import (
 )
 
 //Integration test for alert CRUD operations
-//docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
 func TestRethinkDB_CRUDAlert(t *testing.T) {
   db := getTestDB(t)
 
@@ -55,6 +54,7 @@ func TestRethinkDB_CRUDAlert(t *testing.T) {
   }
 }
 
+//docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
 func getTestDB(t *testing.T)(db* RethinkDB){
   db = &RethinkDB{
     Address: "localhost:28015",
