@@ -12,6 +12,7 @@ type AlertService struct {
 func (as *AlertService) ProcessAlert(alert models.Alert)(id string, err error){
   alert.GenerateDefaults()
 
+  //Check for duplicate alerts
   existingAlert, alertIsDuplicate, err := as.db.FindDuplicateAlert(alert)
   if err != nil {
     return
@@ -24,9 +25,27 @@ func (as *AlertService) ProcessAlert(alert models.Alert)(id string, err error){
     }
 
     id = existingAlert.Id
-  }else {
-    id, err = as.db.CreateAlert(alert)
+    return
   }
+
+  //Check for correlated alerts
+  existingCorrelatedAlert, alertIsCorrelated, err := as.db.FindCorrelatedAlert(alert)
+  if err != nil {
+    return
+  }
+
+  if alertIsCorrelated {
+    err = as.db.UpdateExistingAlertWithCorrelated(existingCorrelatedAlert, alert)
+    if err != nil{
+      return
+    }
+
+    id = existingCorrelatedAlert.Id
+    return
+  }
+
+  //Alert is neither duplicate or correlated, create a new one
+  id, err = as.db.CreateAlert(alert)
 
   return
 }

@@ -3,7 +3,6 @@ package rethinkdb
 import (
   r "gopkg.in/dancannon/gorethink.v2"
   "github.com/allen13/golerta/app/models"
-  "time"
 )
 
 type RethinkDB struct {
@@ -131,7 +130,7 @@ func (re* RethinkDB) CreateAlerts(alerts []models.Alert)(ids []string, err error
   return writeResponse.GeneratedKeys, nil
 }
 
-func (re* RethinkDB) FindOneAlert(filter map[string]interface{})(alert models.Alert, foundOne bool, err error) {
+func (re* RethinkDB) FindOneAlert(filter interface{})(alert models.Alert, foundOne bool, err error) {
   alerts, err := re.FindAlerts(filter)
   if err != nil {
     return
@@ -147,7 +146,7 @@ func (re* RethinkDB) FindOneAlert(filter map[string]interface{})(alert models.Al
   return
 }
 
-func (re* RethinkDB) FindAlerts(filter map[string]interface{})(alerts []models.Alert, err error) {
+func (re* RethinkDB) FindAlerts(filter interface{})(alerts []models.Alert, err error) {
   res, err := r.DB(re.Database).Table("alerts").Filter(filter).Run(re.session)
   if err != nil {
     return
@@ -164,9 +163,24 @@ func (re* RethinkDB) FindDuplicateAlert(alert models.Alert)(existingAlert models
     "environment": alert.Environment,
     "resource": alert.Resource,
     "severity": alert.Severity,
+    "customer": alert.Customer,
   }
 
   existingAlert, alertIsDuplicate, err = re.FindOneAlert(findDuplicateAlert)
+
+  return
+}
+
+func (re* RethinkDB) FindCorrelatedAlert(alert models.Alert)(existingAlert models.Alert, alertIsCorrelated bool, err error) {
+  var correlatedFilter = func(user r.Term) r.Term {
+    return user.Field("event").Eq(alert.Event).And(
+           user.Field("environment").Eq(alert.Environment)).And(
+           user.Field("resource").Eq(alert.Resource)).And(
+           user.Field("customer").Eq(alert.Customer)).And(
+           user.Field("severity").Ne(alert.Severity))
+  }
+
+  existingAlert, alertIsCorrelated, err = re.FindOneAlert(correlatedFilter)
 
   return
 }
@@ -207,10 +221,30 @@ func (re* RethinkDB) UpdateExistingAlertWithDuplicate(existingId string, duplica
     "rawData": duplicateAlert.RawData,
     "repeat": true,
     "lastReceiveId": duplicateAlert.Id,
-    "lastReceiveTime": time.Now(),
+    "lastReceiveTime": duplicateAlert.ReceiveTime,
     "duplicateCount": r.Row.Field("duplicateCount").Add(1),
-    "history": r.Row.Field("history").Append(duplicateAlert.History[0]),
+    "history": r.Row.Field("history").Prepend(duplicateAlert.History[0]),
   }
   err = re.UpdateAlert(existingId, alertUpdate)
+  return
+}
+
+func (re* RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Alert, correlatedAlert models.Alert)(err error){
+  alertUpdate := map[string]interface{}{
+    "severity": correlatedAlert.Severity,
+    "previousSeverity": existingAlert.Severity,
+    "status": correlatedAlert.Status,
+    "value": correlatedAlert.Value,
+    "text": correlatedAlert.Text,
+    "tags": correlatedAlert.Tags,
+    "createTime": correlatedAlert.CreateTime,
+    "rawData": correlatedAlert.RawData,
+    "duplicateCount": 0,
+    "repeat": false,
+    "lastReceiveId": correlatedAlert.Id,
+    "lastReceiveTime": correlatedAlert.ReceiveTime,
+    "history": r.Row.Field("history").Prepend(correlatedAlert.History[0]),
+  }
+  err = re.UpdateAlert(existingAlert.Id, alertUpdate)
   return
 }

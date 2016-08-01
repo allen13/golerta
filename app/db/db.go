@@ -14,8 +14,10 @@ type DB interface{
   DeleteAlert(id string)(error)
   UpdateAlert(id string, updates map[string]interface{})(error)
   UpdateExistingAlertWithDuplicate(existingId string, duplicateAlert models.Alert)(err error)
-  FindAlerts(filter map[string]interface{})(alerts []models.Alert, err error)
-  FindOneAlert(filter map[string]interface{})(alert models.Alert, foundOne bool, err error)
+  UpdateExistingAlertWithCorrelated(existingAlert models.Alert, correlatedAlert models.Alert)(err error)
+  FindAlerts(filter interface{})(alerts []models.Alert, err error)
+  FindOneAlert(filter interface{})(alert models.Alert, foundOne bool, err error)
   FindDuplicateAlert(alert models.Alert)(existingAlert models.Alert, alertIsDuplicate bool, err error)
+  FindCorrelatedAlert(alert models.Alert)(existingAlert models.Alert, alertIsCorrelated bool, err error)
 }
 
