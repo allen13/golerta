@@ -7,7 +7,7 @@ import (
   "github.com/allen13/golerta/app/models"
 )
 
-func TestAlertService_CreateAlert(t *testing.T) {
+func TestAlertService_ProcessAlert(t *testing.T) {
   db := getTestDB(t)
   as := &AlertService{db}
 
@@ -19,7 +19,42 @@ func TestAlertService_CreateAlert(t *testing.T) {
     Origin: "consul-syd01",
   }
 
-  err := as.CreateAlert(alert)
+  alertId1,err := as.ProcessAlert(alert)
+  if err != nil {
+    t.Fatal(err)
+  }
+
+  alertId2, err := as.ProcessAlert(alert)
+  if err != nil {
+    t.Fatal(err)
+  }
+
+  if alertId1 != alertId2 {
+    err = as.DeleteAlert(alertId1)
+    if err != nil {
+      t.Fatal(err)
+    }
+    err = as.DeleteAlert(alertId2)
+    if err != nil {
+      t.Fatal(err)
+    }
+    t.Fatal("Created two separate alerts instead of updating the first alert")
+  }
+
+  retrievedAlert, err := as.GetAlert(alertId1)
+  if err != nil {
+    t.Fatal(err)
+  }
+
+  if retrievedAlert.DuplicateCount < 1 {
+    t.Fatal("Failed to update duplicate field")
+  }
+
+  if retrievedAlert.DuplicateCount > 1 {
+    t.Fatal("Duplicate field was updated too many times")
+  }
+
+  err = as.DeleteAlert(alertId1)
   if err != nil {
     t.Fatal(err)
   }

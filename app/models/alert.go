@@ -8,7 +8,7 @@ import (
 type Alert struct {
   Id string                     `gorethink:"id,omitempty" json:"id"`
   Event string                  `gorethink:"event" json:"event"`
-  Severity string               `gorethink:"severtiy" json:"severtiy"`
+  Severity string               `gorethink:"severity" json:"severity"`
   DuplicateCount int            `gorethink:"duplicateCount" json:"duplicateCount"`
   Resource string               `gorethink:"resource" json:"resource"`
   Environment string            `gorethink:"environment" json:"environment"`
@@ -38,7 +38,7 @@ type Alert struct {
 type HistoryEvent struct{
   Id string                     `gorethink:"id,omitempty" json:"id"`
   Event string                  `gorethink:"event" json:"event"`
-  Severity string               `gorethink:"severtiy" json:"severtiy"`
+  Severity string               `gorethink:"severity" json:"severity"`
   Value string                  `gorethink:"value" json:"value"`
   Type string                   `gorethink:"type" json:"type"`
   Text string                   `gorethink:"text" json:"text"`

@@ -10,9 +10,12 @@ type DB interface{
   TableExists(table string)(bool, error)
   CreateAlert(alert models.Alert)(string, error)
   CreateAlerts(alerts []models.Alert)(ids []string, err error)
-  GetAllAlerts(filter map[string]interface{})(alerts []models.Alert, err error)
   GetAlert(id string)(alert models.Alert, err error)
   DeleteAlert(id string)(error)
   UpdateAlert(id string, updates map[string]interface{})(error)
+  UpdateExistingAlertWithDuplicate(existingId string, duplicateAlert models.Alert)(err error)
+  FindAlerts(filter map[string]interface{})(alerts []models.Alert, err error)
+  FindOneAlert(filter map[string]interface{})(alert models.Alert, foundOne bool, err error)
+  FindDuplicateAlert(alert models.Alert)(existingAlert models.Alert, alertIsDuplicate bool, err error)
 }
 

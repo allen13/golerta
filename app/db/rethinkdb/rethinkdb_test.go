@@ -43,6 +43,21 @@ func TestRethinkDB_CRUDAlert(t *testing.T) {
     t.Fatal("Failed to get back the correct alert")
   }
 
+  //Find the alert
+  filter := make(map[string]interface{})
+  filter["event"] = alert.Event
+  dbAlert, foundAlert, err := db.FindOneAlert(filter)
+  if err != nil {
+    t.Fatal(err)
+  }
+  if !foundAlert {
+    t.Fatal("Failed to find the alert")
+  }
+  if dbAlert.Event != alert.Event {
+    t.Fatal("Found incorrect alert")
+  }
+
+
   //Delete Alert and check that it was deleted
   err = db.DeleteAlert(id)
   if err != nil {
@@ -52,6 +67,24 @@ func TestRethinkDB_CRUDAlert(t *testing.T) {
   if err == nil {
     t.Fatal("Alert was not properly deleted")
   }
+}
+
+
+//Test the functionality for a failed search
+func TestRethinkDB_FailToFindOneAlert(t *testing.T) {
+  db := getTestDB(t)
+  filter := make(map[string]interface{})
+  filter["event"] = "DOES NOT EXIST"
+
+  _,foundOne,err := db.FindOneAlert(filter)
+  if err != nil{
+    t.Fatal("Failed while finding an alert that does not exist")
+  }
+
+  if foundOne {
+    t.Fatal("Should not have found an alert")
+  }
+
 }
 
 //docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb

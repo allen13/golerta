@@ -3,6 +3,7 @@ package rethinkdb
 import (
   r "gopkg.in/dancannon/gorethink.v2"
   "github.com/allen13/golerta/app/models"
+  "time"
 )
 
 type RethinkDB struct {
@@ -130,7 +131,23 @@ func (re* RethinkDB) CreateAlerts(alerts []models.Alert)(ids []string, err error
   return writeResponse.GeneratedKeys, nil
 }
 
-func (re* RethinkDB) GetAllAlerts(filter map[string]interface{})(alerts []models.Alert, err error) {
+func (re* RethinkDB) FindOneAlert(filter map[string]interface{})(alert models.Alert, foundOne bool, err error) {
+  alerts, err := re.FindAlerts(filter)
+  if err != nil {
+    return
+  }
+  if len(alerts) < 1{
+    return
+  }
+  if len(alerts) >= 1{
+    foundOne = true
+    alert = alerts[0]
+    return
+  }
+  return
+}
+
+func (re* RethinkDB) FindAlerts(filter map[string]interface{})(alerts []models.Alert, err error) {
   res, err := r.DB(re.Database).Table("alerts").Filter(filter).Run(re.session)
   if err != nil {
     return
@@ -141,6 +158,21 @@ func (re* RethinkDB) GetAllAlerts(filter map[string]interface{})(alerts []models
   return
 }
 
+func (re* RethinkDB) FindDuplicateAlert(alert models.Alert)(existingAlert models.Alert, alertIsDuplicate bool, err error) {
+  findDuplicateAlert := map[string]interface{}{
+    "event": alert.Event,
+    "environment": alert.Environment,
+    "resource": alert.Resource,
+    "severity": alert.Severity,
+  }
+
+  existingAlert, alertIsDuplicate, err = re.FindOneAlert(findDuplicateAlert)
+
+  return
+}
+
+
+
 func (re* RethinkDB) GetAlert(id string)(alert models.Alert, err error) {
   res, err := r.DB(re.Database).Table("alerts").Get(id).Run(re.session)
   if err != nil {
@@ -148,7 +180,6 @@ func (re* RethinkDB) GetAlert(id string)(alert models.Alert, err error) {
   }
   defer res.Close()
   err = res.One(&alert)
-
   return
 }
 
@@ -166,4 +197,20 @@ func (re* RethinkDB) UpdateAlert(id string, updates map[string]interface{})(erro
     return err
   }
   return nil
+}
+
+func (re* RethinkDB) UpdateExistingAlertWithDuplicate(existingId string, duplicateAlert models.Alert)(err error){
+  alertUpdate := map[string]interface{}{
+    "value": duplicateAlert.Value,
+    "text": duplicateAlert.Text,
+    "tags": duplicateAlert.Tags,
+    "rawData": duplicateAlert.RawData,
+    "repeat": true,
+    "lastReceiveId": duplicateAlert.Id,
+    "lastReceiveTime": time.Now(),
+    "duplicateCount": r.Row.Field("duplicateCount").Add(1),
+    "history": r.Row.Field("history").Append(duplicateAlert.History[0]),
+  }
+  err = re.UpdateAlert(existingId, alertUpdate)
+  return
 }
