@@ -1,0 +1,62 @@
+
+<div class="container-fluid">
+
+  <div class="row-fluid">
+    <div class="span12">
+
+      <div>
+        <table class="table">
+          <tr ng-show="provider == 'google'">
+            <td><b>Allowed E-mail Domains: </b>{{ domains.join(', ') }}</td>
+          </tr>
+          <tr ng-show="provider == 'github'">
+            <td><b>Allowed GitHub Organisations: </b>{{ orgs.join(', ') }}</td>
+          </tr>
+          <tr ng-show="provider == 'gitlab'">
+            <td><b>Allowed GitLab Groups: </b>{{ groups.join(', ') }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="table">
+        <tr>
+          <th>Name</th>
+          <th>Login</th>
+          <th>Role</th>
+          <th class="hidden-xs">Since</th>
+          <th class="hidden-xs">Provider</th>
+          <th class="hidden-xs">Comment</th>
+          <th>Access</th>
+        </tr>
+        <tr ng-repeat="user in users">
+          <td>{{ user.name }}</td>
+          <td>{{ user.login }}</td>
+          <td>{{ user.role || "n/a" }}</td>
+          <td class="hidden-xs">{{ user.createTime | date:longDate }}</td>
+          <td class="hidden-xs">{{ user.provider }}</td>
+          <td class="hidden-xs">{{ user.text }}</td>
+          <td><button type="button" class="btn btn-default btn-sm" ng-click="deleteUser(user.id);"><i class="glyphicon glyphicon-trash"></i> Revoke</button></td>
+        </tr>
+      </table>
+
+      <form name="form" class="form-inline css-form" novalidate>
+         <div class="form-group">
+          <input class="form-control" id="input-name" placeholder="Name" ng-model="name" name="name" required />
+        </div>
+        <div class="form-group">
+          <div class="input-group ">
+              <span class="input-group-addon">@</span>
+              <label class="sr-only" for="login">Login</label>
+              <input class="form-control" id="input-login" placeholder="{{ placeholder }}" ng-model="login" name="login" required />
+          </div>
+        </div>
+        <div class="form-group" ng-show="provider == 'basic'">
+          <input type="password" class="form-control" id="input-password" ng-model="password" placeholder="Password" ng-required="provider == 'basic'" />
+        </div>
+        <button type="button" class="btn btn-primary" ng-click="createUser(name,login, password)" ng-disabled="form.$invalid">Add new User</button>
+      </form>
+
+    </div>
+  </div>
+
+</div>

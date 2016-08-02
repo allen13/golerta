@@ -1,0 +1,63 @@
+<div class="container-fluid">
+
+  <div class="row">
+    <div class="col-md-3 col-sm-3 col-xs-12">
+        <select class="form-control input-sm" ng-model="option" ng-change="setService(option)"
+        ng-options="s as s.service group by s.environment for s in services | orderBy:['environment','service']">
+          <option value="" ng-model="option" ng-change="setService(null)">Service</option>
+        </select>
+    </div>
+    <div class="col-md-5 col-sm-5 col-xs-12">
+      <input class="form-control input" ng-model="search" size="8" placeholder="Search">
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-12">
+      <select class="form-control input-sm" ng-options="item as item.name for item in show track by item.name" ng-model="status" ng-change="update()"></select>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-12">
+      <button type="button" class="btn btn-primary btn-block" ng-click="refresh()" ng-disabled="autoRefresh">{{ refreshText }}</button>
+    </div>
+  </div> <!-- row -->
+
+  <div class="row">
+    <div class="col-md-12">
+    <ul class="nav nav-tabs">
+      <li ng-class="{active: !environment}"><a data-toggle="tab" ng-click="setEnv(null)">ALL&nbsp;<span class="badge">{{ total || 0 }}</span></a></li>
+      <li ng-class="{active: environment == e.environment}" ng-repeat="e in environments"><a data-toggle="tab" ng-click="setEnv(e.environment)">{{ e.environment }}&nbsp;<span class="badge">{{ e.count || 0 }}</span></a></li>
+    </ul>
+    </div>
+  </div> <!-- row -->
+
+  <div class="row">
+    <div class="col-xs-12">
+      <table class="table">
+        <tr>
+          <th>Event</th>
+          <th>Count</th>
+          <th>Duplicate Count</th>
+          <th>Environments</th>
+          <th>Services</th>
+          <th>Resources</th>
+        </tr>
+
+        <tr ng-repeat="event in top10 | filter:search">
+          <td>{{ event.event }}</td>
+          <td>{{ event.count }}</td>
+          <td>{{ event.duplicateCount }}</td>
+          <td>{{ event.environments.join(', ') }}</td>
+          <td>{{ event.services.join(', ') }}</td>
+          <td><span ng-repeat="resource in event.resources"><a href="#/alert/{{ resource.id }}">{{ resource.resource }}</a> </span></td>
+        </tr>
+      </table>
+
+      <div ng-show="!top10">
+          <center><img src="img/loading.gif"/></center>
+      </div>
+
+      <div ng-show="top10.length == 0">
+          <center>{{ message }}</center>
+      </div>
+
+    </div>
+  </div> <!-- row -->
+
+</div> <!-- container -->

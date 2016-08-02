@@ -41,7 +41,13 @@ func main() {
   auth.RegisterAuthProvider(config, golerta)
   app.RegisterApp(config,golerta,authorizationMiddleware)
 
-  golerta.Listen(":8080")
+  golerta.StaticWeb("/static", "./static", 1)
+
+  golerta.Get("/",func(ctx *iris.Context) {
+    ctx.Redirect("/static/index.html", 301)
+  })
+
+  golerta.Listen(":5608")
 }
 
 func buildAuthorizationMiddleware(signingKey string)(*jwtmiddleware.Middleware){

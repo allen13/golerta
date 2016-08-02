@@ -1,0 +1,104 @@
+
+@font-face {
+    font-family: Sintony;
+    src: url('../fonts/Sintony-Regular.ttf');
+}
+
+@font-face {
+    font-family: Sintony;
+    font-weight: bold;
+    src: url('../fonts/Sintony-Bold.ttf');
+}
+
+
+@font-face {
+    font-family: "Sonsie One";
+    src: url('../fonts/SonsieOne-Regular.ttf');
+}
+
+body {
+    padding: 10px !important;
+}
+
+table {
+    margin: 0;
+    font-family: Sintony, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    line-height: 14px;
+    color: #333333;
+    background-color: #ffffff;
+    font-weight: normal;
+}
+
+.logo {
+    font-family: "Sonsie One";
+    font-size: 26pt;
+}
+
+.ng-table {
+    border: 1px solid #000;
+}
+
+.label {
+    font-size: 10.998px;
+    font-weight: bold;
+    line-height: 14px;
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: #999999;
+}
+
+.label {
+    padding: 1px 4px 2px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+.label-critical {
+    background-color: #b94a48;
+}
+
+.label-major {
+    background-color: #f89406;
+}
+
+.label-minor {
+    background-color: #ffd700;
+}
+
+.label-warning {
+    background-color: #3a87ad;
+}
+
+.label-normal,
+.label-cleared,
+.label-ok,
+.label-informational {
+    background-color: #468847;
+}
+
+.label-inverse {
+    background-color: #333333;
+}
+
+.no-wrap {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.center {
+    text-align: center;
+}
+
+.alert {
+   width:40%;
+   margin: 0 auto;
+}
+
