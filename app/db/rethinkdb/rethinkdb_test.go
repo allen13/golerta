@@ -89,11 +89,8 @@ func TestRethinkDB_FailToFindOneAlert(t *testing.T) {
 
 //docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
 func getTestDB(t *testing.T)(db* RethinkDB){
-  db = &RethinkDB{
-    Address: "localhost:28015",
-    Database: "alerta",
-  }
-  err := db.Connect()
+  db = &RethinkDB{}
+  err := db.Init()
 
   if err != nil{
     t.Fatal(err)

@@ -122,12 +122,9 @@ func TestAlertService_ProcessCorrelatedAlerts(t *testing.T) {
 }
 
 //docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
-func getTestDB(t *testing.T)(db.DB){
-  db := &rethinkdb.RethinkDB{
-    Address: "localhost:28015",
-    Database: "alerta",
-  }
-  err := db.Connect()
+func getTestDB(t *testing.T)(db* rethinkdb.RethinkDB){
+  db = &rethinkdb.RethinkDB{}
+  err := db.Init()
 
   if err != nil{
     t.Fatal(err)

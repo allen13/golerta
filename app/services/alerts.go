@@ -6,20 +6,20 @@ import (
 )
 
 type AlertService struct {
-  db db.DB
+  DB db.DB
 }
 
 func (as *AlertService) ProcessAlert(alert models.Alert)(id string, err error){
   alert.GenerateDefaults()
 
   //Check for duplicate alerts
-  existingAlert, alertIsDuplicate, err := as.db.FindDuplicateAlert(alert)
+  existingAlert, alertIsDuplicate, err := as.DB.FindDuplicateAlert(alert)
   if err != nil {
     return
   }
 
   if alertIsDuplicate {
-    err = as.db.UpdateExistingAlertWithDuplicate(existingAlert.Id, alert)
+    err = as.DB.UpdateExistingAlertWithDuplicate(existingAlert.Id, alert)
     if err != nil{
       return
     }
@@ -29,13 +29,13 @@ func (as *AlertService) ProcessAlert(alert models.Alert)(id string, err error){
   }
 
   //Check for correlated alerts
-  existingCorrelatedAlert, alertIsCorrelated, err := as.db.FindCorrelatedAlert(alert)
+  existingCorrelatedAlert, alertIsCorrelated, err := as.DB.FindCorrelatedAlert(alert)
   if err != nil {
     return
   }
 
   if alertIsCorrelated {
-    err = as.db.UpdateExistingAlertWithCorrelated(existingCorrelatedAlert, alert)
+    err = as.DB.UpdateExistingAlertWithCorrelated(existingCorrelatedAlert, alert)
     if err != nil{
       return
     }
@@ -45,18 +45,30 @@ func (as *AlertService) ProcessAlert(alert models.Alert)(id string, err error){
   }
 
   //Alert is neither duplicate or correlated, create a new one
-  id, err = as.db.CreateAlert(alert)
+  id, err = as.DB.CreateAlert(alert)
 
   return
 }
 
 func (as *AlertService) GetAlert(id string)(alert models.Alert, err error){
-  alert, err = as.db.GetAlert(id)
+  alert, err = as.DB.GetAlert(id)
+  return
+}
+
+func (as *AlertService) GetAlerts()(alertResponse models.AlertsResponse, err error){
+  alertResponse = models.AlertsResponse{}
+  emptyFilter := map[string]string{}
+  alertResponse.Alerts, err = as.DB.FindAlerts(emptyFilter)
+  if err != nil {
+    return
+  }
+  alertResponse.Status = "ok"
+  alertResponse.Total = len(alertResponse.Alerts)
   return
 }
 
 func (as *AlertService) DeleteAlert(id string)(err error){
-  err = as.db.DeleteAlert(id)
+  err = as.DB.DeleteAlert(id)
   return
 }
 

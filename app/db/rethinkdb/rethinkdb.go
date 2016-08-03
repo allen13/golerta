@@ -11,6 +11,16 @@ type RethinkDB struct {
   session* r.Session
 }
 
+func (re* RethinkDB) Init()(error){
+  if re.Address == "" {
+    re.Address = "localhost:28015"
+  }
+  if re.Database == "" {
+    re.Database = "alerta"
+  }
+
+  return re.Connect()
+}
 func (re* RethinkDB) Connect()(error){
   session, err := r.Connect(r.ConnectOpts{
     Address: re.Address,
@@ -153,7 +163,9 @@ func (re* RethinkDB) FindAlerts(filter interface{})(alerts []models.Alert, err e
   }
   defer res.Close()
   err = res.All(&alerts)
-
+  if alerts == nil {
+    alerts = []models.Alert{}
+  }
   return
 }
 
