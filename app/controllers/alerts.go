@@ -22,7 +22,7 @@ func (ac *AlertsController) Init() {
 }
 
 func (ac *AlertsController) getAlerts(ctx *iris.Context) {
-	alertsResponse, err := ac.AlertService.GetAlerts()
+	alertsResponse, err := ac.AlertService.GetAlerts(ctx.QueryArgs())
 	if err != nil {
 		ctx.JSON(iris.StatusInternalServerError, error{Status: "error", Message: err.Error()})
 	}

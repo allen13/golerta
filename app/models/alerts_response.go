@@ -15,3 +15,18 @@ type AlertsResponse struct {
 	LastTime       time.Time `json:"lastTime"`
 	AutoRefresh    bool      `json:"autoRefresh"`
 }
+
+func NewAlertsResponse(alerts []Alert)(ar AlertsResponse){
+	ar = AlertsResponse{}
+	ar.Alerts = alerts
+	ar.Total = len(alerts)
+	ar.Status = "ok"
+	ar.AutoRefresh = true
+	ar.LastTime = alerts[0].CreateTime
+	ar.More = false
+	ar.Page = 1
+	ar.Pages = 1
+	ar.PageSize = 10000
+
+	return
+}

@@ -3,6 +3,8 @@ package services
 import (
   "github.com/allen13/golerta/app/models"
   "github.com/allen13/golerta/app/db"
+  "github.com/valyala/fasthttp"
+  "github.com/allen13/golerta/app/filters"
 )
 
 type AlertService struct {
@@ -55,15 +57,14 @@ func (as *AlertService) GetAlert(id string)(alert models.Alert, err error){
   return
 }
 
-func (as *AlertService) GetAlerts()(alertResponse models.AlertsResponse, err error){
-  alertResponse = models.AlertsResponse{}
-  emptyFilter := map[string]string{}
-  alertResponse.Alerts, err = as.DB.FindAlerts(emptyFilter)
+func (as *AlertService) GetAlerts(queryArgs *fasthttp.Args)(alertsResponse models.AlertsResponse, err error){
+  alerts, err := as.DB.FindAlerts(filters.BuildAlertsFilter(queryArgs))
   if err != nil {
     return
   }
-  alertResponse.Status = "ok"
-  alertResponse.Total = len(alertResponse.Alerts)
+
+  alertsResponse = models.NewAlertsResponse(alerts)
+
   return
 }
 

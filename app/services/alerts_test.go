@@ -3,7 +3,6 @@ package services
 import (
   "testing"
   "github.com/allen13/golerta/app/db/rethinkdb"
-  "github.com/allen13/golerta/app/db"
   "github.com/allen13/golerta/app/models"
 )
 
@@ -12,10 +11,10 @@ func TestAlertService_ProcessAlert(t *testing.T) {
   as := &AlertService{db}
 
   alert := models.Alert{
-    Event: "cpu usage idle",
+    Event: "duplicate alert",
     Resource: "testServer01",
     Environment: "syd01",
-    Severity: "CRITICAL",
+    Severity: "critical",
     Origin: "consul-syd01",
   }
 
@@ -65,18 +64,18 @@ func TestAlertService_ProcessCorrelatedAlerts(t *testing.T) {
   as := &AlertService{db}
 
   alert := models.Alert{
-    Event: "cpu usage idle",
+    Event: "correlated alert",
     Resource: "testServer01",
     Environment: "syd01",
-    Severity: "CRITICAL",
+    Severity: "critical",
     Origin: "consul-syd01",
   }
 
   correlatedAlert := models.Alert{
-    Event: "cpu usage idle",
+    Event: "correlated alert",
     Resource: "testServer01",
     Environment: "syd01",
-    Severity: "NORMAL",
+    Severity: "normal",
     Origin: "consul-syd01",
   }
 
