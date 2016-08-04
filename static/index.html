@@ -6,7 +6,6 @@
   <title>Alerta</title>
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
   <link rel="stylesheet" href="css/app.css"/>
-  <google-analytics></google-analytics>
 </head>
 
 <body ng-controller="MenuController">
@@ -20,14 +19,13 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand logo" href="#/">alerta</a>
+      <a class="navbar-brand logo" href="#/">golerta</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="navbar-collapse">
       <ul class="nav navbar-nav">
         <li ng-class="{active: isActive('/alerts')}"><a href="#/">Recent</a></li>
-        <li ng-class="{active: isActive('/top10')}"><a href="#/top10">Top 10</a></li>
         <li ng-class="{active: isActive('/watch')}" ng-show="isAuthenticated();"><a href="#/watch">Watch</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">

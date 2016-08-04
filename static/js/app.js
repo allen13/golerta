@@ -24,11 +24,6 @@ alertaApp.config(['$routeProvider',
       templateUrl: 'partials/alert-details.html',
       controller: 'AlertDetailController'
     })
-    .when('/top10', {
-      templateUrl: 'partials/alert-top10.html',
-      controller: 'AlertTop10Controller',
-      reloadOnSearch: false
-    })
     .when('/watch', {
       templateUrl: 'partials/alert-watch.html',
       controller: 'AlertWatchController'
@@ -60,10 +55,6 @@ alertaApp.config(['$routeProvider',
     .when('/login', {
       templateUrl: 'partials/login.html',
       controller: 'LoginController'
-    })
-    .when('/signup', {
-      templateUrl: 'partials/signup.html',
-      controller: 'SignupController'
     })
     .when('/logout', {
       templateUrl: 'partials/logout.html',
@@ -97,20 +88,4 @@ alertaApp.config(['config', '$authProvider',
     $authProvider.loginUrl = config.endpoint+'/auth/login';
     $authProvider.signupUrl = config.endpoint+'/auth/signup';
     $authProvider.logoutRedirect = '/login';
-    $authProvider.google({
-      url: config.endpoint+'/auth/google',
-      clientId: config.client_id
-    });
-    $authProvider.github({
-      url: config.endpoint+'/auth/github',
-      clientId: config.client_id,
-      scope: ['user:email', 'read:org'],
-    });
-    $authProvider.oauth2({
-      name: 'gitlab',
-      url: config.endpoint+'/auth/gitlab',
-      redirectUri: window.location.origin,
-      clientId: config.client_id,
-      authorizationEndpoint: config.gitlab_url+'/oauth/authorize'
-    });
 }]);
