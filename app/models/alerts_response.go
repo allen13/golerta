@@ -16,7 +16,7 @@ type AlertsResponse struct {
 	AutoRefresh    bool      `json:"autoRefresh"`
 }
 
-func NewAlertsResponse(alerts []Alert)(ar AlertsResponse){
+func NewAlertsResponse(alerts []Alert) (ar AlertsResponse) {
 	ar = AlertsResponse{}
 	ar.Alerts = alerts
 	ar.Total = len(alerts)

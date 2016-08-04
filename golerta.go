@@ -1,8 +1,8 @@
 package main
 
 import (
-  "github.com/docopt/docopt-go"
-  "github.com/allen13/golerta/app"
+	"github.com/allen13/golerta/app"
+	"github.com/docopt/docopt-go"
 )
 
 const version = "Golerta 0.0.1"
@@ -20,8 +20,8 @@ Options:
 `
 
 func main() {
-  args, _ := docopt.Parse(usage, nil, true, version, false)
-  configFile := args["--config"].(string)
-  http := app.BuildApp(configFile)
-  http.Listen(":5608")
+	args, _ := docopt.Parse(usage, nil, true, version, false)
+	configFile := args["--config"].(string)
+	http := app.BuildApp(configFile)
+	http.Listen(":5608")
 }
