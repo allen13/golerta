@@ -162,7 +162,6 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     };
 
     var getServices = function(alerts){
-        console.log("begin")
         var servicesCount = {};
         for (var i=0; i < alerts.length; i++) {
             var environment = alerts[i]["environment"];
@@ -190,7 +189,6 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
             }
 
         }
-        console.log("end")
         return services
     }
 
@@ -773,9 +771,9 @@ alertaControllers.controller('LoginController', ['$scope', '$rootScope', '$locat
 
     $scope.provider = config.provider;
 
-    $scope.login = function(email, password) {
+    $scope.login = function(username, password) {
       $auth.login({
-        email: $scope.email,
+        username: $scope.username,
         password: $scope.password
       })
         .then(function() {

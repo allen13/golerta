@@ -10,17 +10,13 @@
     <div class="col-sm-6 col-md-4 col-md-offset-4">
       <form>
         <div class="form-group">
-          <div class="input-group">
-            <div class="input-group-addon">@</div>
-            <input type="email" class="form-control" id="input-email" ng-model="email" placeholder="Email" required autofocus>
-          </div>
+          <input type="text" class="form-control" id="input-user" ng-model="username" placeholder="Username" required autofocus>
         </div>
         <div class="form-group">
           <input type="password" class="form-control" id="input-password" ng-model="password" placeholder="Password" required>
         </div>
-        <button type="submit" class="btn btn-primary btn-block" ng-click="login(email, password)">Sign in</button>
+        <button type="submit" class="btn btn-primary btn-block" ng-click="login(username, password)">Sign in</button>
       </form>
-      <p><a href="#/signup" class="text-center new-account">Create an account </a>
     </div>
   </div>
 
