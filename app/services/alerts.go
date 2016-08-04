@@ -52,8 +52,9 @@ func (as *AlertService) ProcessAlert(alert models.Alert) (id string, err error) 
 	return
 }
 
-func (as *AlertService) GetAlert(id string) (alert models.Alert, err error) {
-	alert, err = as.DB.GetAlert(id)
+func (as *AlertService) GetAlert(id string) (alertResponse models.AlertResponse, err error) {
+	alert, err := as.DB.GetAlert(id)
+	alertResponse = models.NewAlertResponse(alert)
 	return
 }
 
