@@ -63,7 +63,6 @@ func (as *AlertService) GetAlerts(queryArgs *fasthttp.Args) (alertsResponse mode
 	if err != nil {
 		return
 	}
-
 	alertsResponse = models.NewAlertsResponse(alerts)
 
 	return
@@ -72,4 +71,35 @@ func (as *AlertService) GetAlerts(queryArgs *fasthttp.Args) (alertsResponse mode
 func (as *AlertService) DeleteAlert(id string) (err error) {
 	err = as.DB.DeleteAlert(id)
 	return
+}
+
+func (as *AlertService) GetAlertsCount(queryArgs *fasthttp.Args)(models.AlertsCountResponse,error) {
+	severityCounts, err := as.DB.CountAlertsGroup("severity", filters.BuildAlertsFilter(queryArgs))
+	if err != nil{
+		return models.AlertsCountResponse{}, err
+	}
+	statusCounts, err := as.DB.CountAlertsGroup("status", filters.BuildAlertsFilter(queryArgs))
+	if err != nil{
+		return models.AlertsCountResponse{}, err
+	}
+
+	return models.NewAlertsCountResponse(statusCounts, severityCounts), nil
+}
+
+func (as *AlertService) GetGroupedServices(queryArgs *fasthttp.Args)(models.GroupedServiceResponse,error) {
+	groupedServices, err := as.DB.GetAlertServicesGroupedByEnvironment(filters.BuildAlertsFilter(queryArgs))
+	if err != nil{
+		return models.GroupedServiceResponse{}, err
+	}
+
+	return models.NewGroupedServiceResponse(groupedServices), nil
+}
+
+func (as *AlertService) GetGroupedEnvironments(queryArgs *fasthttp.Args)(models.GroupedEnvironmentResponse,error) {
+	groupedEnvironments, err := as.DB.GetAlertEnvironmentsGroupedByEnvironment(filters.BuildAlertsFilter(queryArgs))
+	if err != nil{
+		return models.GroupedEnvironmentResponse{}, err
+	}
+
+	return models.NewGroupedEnvironmentResponse(groupedEnvironments), nil
 }

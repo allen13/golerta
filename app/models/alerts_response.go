@@ -22,7 +22,9 @@ func NewAlertsResponse(alerts []Alert) (ar AlertsResponse) {
 	ar.Total = len(alerts)
 	ar.Status = "ok"
 	ar.AutoRefresh = true
-	ar.LastTime = alerts[0].CreateTime
+	if ar.Total > 0{
+		ar.LastTime = alerts[0].CreateTime
+	}
 	ar.More = false
 	ar.Page = 1
 	ar.Pages = 1

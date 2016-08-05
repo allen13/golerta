@@ -28,14 +28,14 @@ alertaServices.factory('Alert', ['$resource', 'config',
 
 alertaServices.factory('Environment', ['$resource', 'config',
   function($resource, config) {
-    return $resource(config.endpoint+'/environments', {}, {
+    return $resource(config.endpoint+'/alerts/environments', {}, {
       'all':  {method: 'GET'},
     });
   }]);
 
 alertaServices.factory('Service', ['$resource', 'config',
   function($resource, config) {
-    return $resource(config.endpoint+'/services', {}, {
+    return $resource(config.endpoint+'/alerts/services', {}, {
       'all':  {method: 'GET'},
     });
   }]);

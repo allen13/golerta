@@ -19,4 +19,7 @@ type DB interface {
 	FindOneAlert(filter interface{}) (alert models.Alert, foundOne bool, err error)
 	FindDuplicateAlert(alert models.Alert) (existingAlert models.Alert, alertIsDuplicate bool, err error)
 	FindCorrelatedAlert(alert models.Alert) (existingAlert models.Alert, alertIsCorrelated bool, err error)
+	CountAlertsGroup(group string, filter interface{}) (alertCountGroup map[string]int, err error)
+	GetAlertEnvironmentsGroupedByEnvironment(filter interface{}) (groupedEnvironments []models.GroupedEnvironment, err error)
+	GetAlertServicesGroupedByEnvironment(filter interface{}) (groupedServices []models.GroupedService, err error)
 }

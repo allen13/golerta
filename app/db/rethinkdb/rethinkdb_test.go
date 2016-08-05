@@ -14,7 +14,7 @@ func TestRethinkDB_CRUDAlert(t *testing.T) {
 		Event:       "cpu usage idle",
 		Resource:    "testServer01",
 		Environment: "syd01",
-		Severity:    "CRITICAL",
+		Severity:    "critical",
 		Origin:      "consul-syd01",
 	}
 	alert.GenerateDefaults()
@@ -65,6 +65,46 @@ func TestRethinkDB_CRUDAlert(t *testing.T) {
 	_, err = db.GetAlert(id)
 	if err == nil {
 		t.Fatal("Alert was not properly deleted")
+	}
+}
+
+//Integration test for alert CRUD operations
+func TestRethinkDB_GetServicesGroupedByEnvironment(t *testing.T) {
+	db := getTestDB(t)
+
+	alert := &models.Alert{
+		Event:       "cpu usage idle",
+		Resource:    "testServer01",
+		Environment: "syd01",
+		Severity:    "critical",
+		Origin:      "consul-syd01",
+		Service:     []string{"svc1", "svc2"},
+	}
+	alert.GenerateDefaults()
+
+	//Create Alert
+	id, err := db.CreateAlert(*alert)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Find the alert
+	groupedServices, err := db.GetAlertServicesGroupedByEnvironment(r.Row.Field("id").Eq(id))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(groupedServices) != 2 {
+		t.Fatalf("Expected 2 grouped services. Got %d", len(groupedServices))
+	}
+
+	if groupedServices[1].Service != "svc2" {
+		t.Fatalf("Expected svc2 grouped services. Got %s", groupedServices[1].Service)
+	}
+	//Delete Alert and check that it was deleted
+	err = db.DeleteAlert(id)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

@@ -5,16 +5,51 @@ import (
 	r "gopkg.in/dancannon/gorethink.v2"
 )
 
+var QUERY_PARAMS []string = []string{
+	"status",
+	"environment",
+	"service",
+}
+
 func BuildAlertsFilter(queryArgs *fasthttp.Args) (rowFilter r.Term) {
-	rowFilter = r.Row
-	for i, status := range getQueryValues("status", queryArgs) {
+	for i, queryParam := range QUERY_PARAMS {
+		if !queryArgs.Has(queryParam){
+			continue
+		}
+
+		paramFilter := buildQueryForParam(queryParam, queryArgs)
+
 		if i == 0 {
-			rowFilter = rowFilter.Field("status").Eq(status)
-		} else {
-			rowFilter = rowFilter.Or(r.Row.Field("status").Eq(status))
+			rowFilter = paramFilter
+		}else {
+			rowFilter = rowFilter.And(paramFilter)
 		}
 	}
+
 	return rowFilter
+}
+
+func buildQueryForParam(queryParam string, queryArgs *fasthttp.Args)(r.Term){
+	paramFilter := r.Row
+
+	for i, queryValue := range getQueryValues(queryParam, queryArgs) {
+		if queryParam == "service"{
+			if i == 0 {
+				paramFilter = paramFilter.Field(queryParam).Contains(queryValue)
+			} else {
+				paramFilter = paramFilter.Or(r.Row.Field(queryParam).Contains(queryValue))
+			}
+		}else {
+			if i == 0 {
+				paramFilter = paramFilter.Field(queryParam).Eq(queryValue)
+			} else {
+				paramFilter = paramFilter.Or(r.Row.Field(queryParam).Eq(queryValue))
+			}
+		}
+
+	}
+
+	return paramFilter
 }
 
 func getQueryValues(key string, queryArgs *fasthttp.Args) (values []string) {

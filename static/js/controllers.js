@@ -161,67 +161,26 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
       $location.search($scope.query);
     };
 
-    var getServices = function(alerts){
-        var servicesCount = {};
-        for (var i=0; i < alerts.length; i++) {
-            var environment = alerts[i]["environment"];
-            var services = alerts[i]["service"];
-
-            for (var i=0; i < services.length; i++) {
-                var service = services[i];
-                if (environment in servicesCount){
-                    if (service in servicesCount[environment]){
-                        servicesCount[environment][service] = servicesCount[environment][service] + 1;
-                    } else {
-                        servicesCount[environment][service] = 1;
-                    }
-                }
-                else{
-                    servicesCount[environment] = {};
-                    servicesCount[environment][service] = 1;
-                }
-            }
-        }
-        var services = [];
-        for (var env in servicesCount) {
-            for (var svc in servicesCount[env]) {
-                services.push({"environment": env, "service": svc, "count": servicesCount[env][svc]});
-            }
-
-        }
-        return services
-    }
-
-    var getEnvironments = function(alerts){
-        var environmentCount = {};
-        for (var i=0; i < alerts.length; i++) {
-            var environment = alerts[i]["environment"];
-            if (environment in environmentCount){
-                environmentCount[environment] = environmentCount[environment] + 1;
-            }
-            else{
-                environmentCount[environment] = 1;
-            }
-        }
-        var environments = [];
-        for (var env in environmentCount) {
-            environments.push({"environment": env, "count": environmentCount[env]});
-        }
-        return environments
-    }
+    Service.all({status: $scope.status.value}, function(response) {
+      $scope.services = response.services;
+    });
 
     var refresh = function() {
       $scope.refreshText = 'Refreshing...';
+      Count.query({status: $scope.status.value}, function(response) {
+        $scope.total = response.total;
+        $scope.statusCounts = response.statusCounts;
+      });
+      // Service.all({status: $scope.status.value}, function(response) {
+      //   $scope.services = response.services;
+      // });
+      Environment.all({status: $scope.status.value}, function(response) {
+        $scope.environments = response.environments;
+      });
       updateQuery();
       Alert.query($scope.query, function(response) {
         if (response.status == 'ok') {
           $scope.alerts = response.alerts;
-        }
-        $scope.total = response.total;
-        $scope.statusCounts = response.statusCounts;
-        $scope.environments = getEnvironments($scope.alerts)
-        if ($scope.services == null){
-            $scope.services = getServices($scope.alerts)
         }
         $scope.message = response.status + ' - ' + response.message;
         $scope.autoRefresh = response.autoRefresh;
@@ -433,6 +392,122 @@ alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$rou
     $scope.longDate = config.dates && config.dates.longDate || 'd/M/yyyy h:mm:ss.sss a';
   }]);
 
+alertaControllers.controller('AlertTop10Controller', ['$scope', '$location', '$timeout', 'Count', 'Environment', 'Service', 'Alert',
+  function($scope, $location, $timeout, Count, Environment, Service, Alert){
+
+    $scope.autoRefresh = true;
+    $scope.refreshText = 'Auto Update';
+
+    var search = $location.search();
+    if (search.environment) {
+      $scope.environment = search.environment;
+    }
+    if (search.service) {
+      $scope.service = search.service;
+    }
+
+    $scope.show = [
+      {name: 'Open', value: ['open', 'unknown']},
+      {name: 'Active', value: ['open', 'ack', 'assign']},
+      {name: 'Closed', value: ['closed', 'expired']}
+    ];
+    $scope.status = $scope.show[0];
+
+    $scope.top10 = [];
+    $scope.query = {};
+
+    $scope.setService = function(s) {
+      if (s) {
+        $scope.environment = s.environment;
+        $scope.service = s.service;
+      } else {
+        $scope.environment = null;
+        $scope.service = null;
+      }
+      updateQuery();
+      refresh();
+    };
+
+    $scope.setEnv = function(environment) {
+      $scope.environment = environment;
+      updateQuery();
+      refresh();
+    };
+
+    $scope.update = function() {
+      updateQuery();
+      refresh();
+    };
+
+    $scope.refresh = function() {
+      refresh();
+    };
+
+    var updateQuery = function() {
+      if ($scope.service) {
+        $scope.query['service'] = $scope.service
+      } else {
+        delete $scope.query['service'];
+      }
+      if ($scope.environment) {
+        $scope.query['environment'] = $scope.environment
+      } else {
+        delete $scope.query['environment'];
+      }
+      if ($scope.status) {
+        $scope.query['status'] = $scope.status.value;
+      } else {
+        delete $scope.query['status'];
+      }
+      $location.search($scope.query);
+    };
+
+    Service.all({status: $scope.status.value}, function(response) {
+      $scope.services = response.services;
+    });
+
+    var refresh = function() {
+      $scope.refreshText = 'Refreshing...';
+      Count.query({status: $scope.status.value}, function(response) {
+        $scope.total = response.total;
+        $scope.statusCounts = response.statusCounts;
+      });
+      // Service.all({status: $scope.status.value}, function(response) {
+      //   $scope.services = response.services;
+      // });
+      Environment.all({status: $scope.status.value}, function(response) {
+        $scope.environments = response.environments;
+      });
+      updateQuery();
+      Alert.top10($scope.query, function(response) {
+        if (response.status == 'ok') {
+          $scope.top10 = response.top10;
+        }
+        $scope.message = response.status + ' - ' + response.message;
+        $scope.autoRefresh = response.autoRefresh;
+        if ($scope.autoRefresh) {
+          $scope.refreshText = 'Auto Update';
+        } else {
+          $scope.refreshText = 'Refresh';
+        }
+      });
+    };
+    var refreshWithTimeout = function() {
+      if ($scope.autoRefresh) {
+        refresh();
+      }
+      timer = $timeout(refreshWithTimeout, 5000);
+    };
+    var timer = $timeout(refresh, 200);
+
+    $scope.$on('$destroy', function() {
+      if (timer) {
+        $timeout.cancel(timer);
+      }
+    });
+
+  }]);
+
 alertaControllers.controller('AlertWatchController', ['$scope', '$route', '$location', '$timeout', '$auth',  'config', 'Alert',
   function($scope, $route, $location, $timeout, $auth,  config, Alert){
 
@@ -579,12 +654,12 @@ alertaControllers.controller('AlertBlackoutController', ['$scope', '$route', '$t
     $scope.end = new Date(now);
     $scope.end.setMinutes(now.getMinutes() + 60);
 
-    //Service.all({}, function(response) {
-    //  $scope.services = response.services;
-    //});
-    //Environment.all({}, function(response) {
-    //  $scope.environments = response.environments;
-    //});
+    Service.all({}, function(response) {
+      $scope.services = response.services;
+    });
+    Environment.all({}, function(response) {
+      $scope.environments = response.environments;
+    });
     Customers.all({}, function(response) {
       $scope.customers = response.customers;
     });

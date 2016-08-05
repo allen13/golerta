@@ -258,3 +258,66 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
 	return
 }
+
+func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(filter interface{}) (groupedServices []models.GroupedService, err error) {
+	t := r.DB(re.Database).Table("alerts").Filter(filter).ConcatMap(func(alert r.Term) r.Term {
+		return alert.Field("service").Map(func(service r.Term) r.Term {
+			return r.Object(
+				"service", service,
+				"environment", alert.Field("environment"))
+		})
+	}).CoerceTo("array").Group("environment", "service").Count().Ungroup().Map(func(result r.Term) r.Term {
+		return r.Object(
+			"environment", result.Field("group").AtIndex(0),
+			"service", result.Field("group").AtIndex(1),
+			"count", result.Field("reduction"))
+	})
+
+	res, err := t.Run(re.session)
+	if err != nil {
+		return
+	}
+	defer res.Close()
+	err = res.All(&groupedServices)
+	if groupedServices == nil {
+		groupedServices = []models.GroupedService{}
+	}
+	return
+}
+
+func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(filter interface{}) (groupedEnvironments []models.GroupedEnvironment, err error) {
+	t := r.DB(re.Database).Table("alerts").Filter(filter).Group("environment").Count().Ungroup().Map(func(result r.Term) r.Term {
+		return r.Object(
+			"environment", result.Field("group"),
+			"count", result.Field("reduction"))
+	})
+
+	res, err := t.Run(re.session)
+	if err != nil {
+		return
+	}
+	defer res.Close()
+	err = res.All(&groupedEnvironments)
+	if groupedEnvironments == nil {
+		groupedEnvironments = []models.GroupedEnvironment{}
+	}
+	return
+}
+//r.db("alerta").table("alerts").group("severity").count().ungroup().map(r.object(r.row("group"),r.row("reduction"))).reduce(function(left, right){return left.merge(right)})
+func (re *RethinkDB) CountAlertsGroup(group string, filter interface{}) (alertCountGroup map[string]int, err error) {
+	t := r.DB(re.Database).Table("alerts").Filter(filter).Group(group).Count().Ungroup().Map(
+		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term)(r.Term){
+		return left.Merge(right)
+	})
+
+	res, err := t.Run(re.session)
+	if err != nil {
+		return
+	}
+	defer res.Close()
+	err = res.One(&alertCountGroup)
+	if alertCountGroup == nil {
+		alertCountGroup = map[string]int{}
+	}
+	return
+}
