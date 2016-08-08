@@ -4,17 +4,13 @@ import (
 	"github.com/allen13/golerta/app/services"
 	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris"
+	"github.com/allen13/golerta/app/models"
 )
 
 type AlertsController struct {
 	HTTP           *iris.Framework
 	AlertService   services.AlertService
 	AuthMiddleware *jwtmiddleware.Middleware
-}
-
-type ErrorResponse struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
 }
 
 func (ac *AlertsController) Init() {
@@ -27,32 +23,25 @@ func (ac *AlertsController) Init() {
 
 func (ac *AlertsController) getAlerts(ctx *iris.Context) {
 	alertsResponse, err := ac.AlertService.GetAlerts(ctx.QueryArgs())
-	standardResponse(ctx, alertsResponse, err)
+	models.StandardResponse(ctx, alertsResponse, err)
 }
 
 func (ac *AlertsController) getAlert(ctx *iris.Context) {
 	alertResponse, err := ac.AlertService.GetAlert(ctx.Param("alert"))
-	standardResponse(ctx, alertResponse, err)
+	models.StandardResponse(ctx, alertResponse, err)
 }
 
 func (ac *AlertsController) getAlertsCount(ctx *iris.Context) {
 	alertsCount, err := ac.AlertService.GetAlertsCount(ctx.QueryArgs())
-	standardResponse(ctx, alertsCount, err)
+	models.StandardResponse(ctx, alertsCount, err)
 }
 
 func (ac *AlertsController) getAlertsServices(ctx *iris.Context) {
 	groupedServices, err := ac.AlertService.GetGroupedServices(ctx.QueryArgs())
-	standardResponse(ctx, groupedServices, err)
+	models.StandardResponse(ctx, groupedServices, err)
 }
 
 func (ac *AlertsController) getAlertsEnvironments(ctx *iris.Context) {
 	groupedEnvironments, err := ac.AlertService.GetGroupedEnvironments(ctx.QueryArgs())
-	standardResponse(ctx, groupedEnvironments, err)
-}
-
-func standardResponse(ctx *iris.Context, response interface{}, err error){
-	if err != nil {
-		ctx.JSON(iris.StatusInternalServerError, ErrorResponse{Status: "error", Message: err.Error()})
-	}
-	ctx.JSON(iris.StatusOK, response)
+	models.StandardResponse(ctx, groupedEnvironments, err)
 }
