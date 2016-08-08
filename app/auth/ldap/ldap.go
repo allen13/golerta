@@ -64,12 +64,16 @@ func (lc *LDAPAuthProvider) LoginHandler(ctx *iris.Context) {
 func (lc *LDAPAuthProvider) createToken(username string) (string, error) {
 	mySigningKey := []byte(lc.signingKey)
 	expirationTimestamp := time.Now().Add(time.Hour * 48).Unix()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	claims := jwt.MapClaims{
 		"jti": username,
 		"iss": "ldap",
 		"exp": expirationTimestamp,
 		"name": username,
-	})
+		//Everyone who logs in is an admin by default for now. Could check ldap groups for this.
+		"role": "admin",
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	ss, err := token.SignedString(mySigningKey)
 	if err != nil {
 		return "", err
