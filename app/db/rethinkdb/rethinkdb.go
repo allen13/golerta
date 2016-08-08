@@ -3,6 +3,7 @@ package rethinkdb
 import (
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
+	"github.com/valyala/fasthttp"
 )
 
 type RethinkDB struct {
@@ -19,9 +20,9 @@ func (re *RethinkDB) Init() error {
 		re.Database = "alerta"
 	}
 
-	return re.Connect()
+	return re.connect()
 }
-func (re *RethinkDB) Connect() error {
+func (re *RethinkDB) connect() error {
 	session, err := r.Connect(r.ConnectOpts{
 		Address: re.Address,
 	})
@@ -30,12 +31,12 @@ func (re *RethinkDB) Connect() error {
 	}
 	re.session = session
 
-	err = re.CreateDBIfNotExist()
+	err = re.createDBIfNotExist()
 	if err != nil {
 		return err
 	}
 
-	err = re.CreateTableIfNotExist("alerts")
+	err = re.createTableIfNotExist("alerts")
 	if err != nil {
 		return err
 	}
@@ -43,8 +44,8 @@ func (re *RethinkDB) Connect() error {
 	return nil
 }
 
-func (re *RethinkDB) CreateDBIfNotExist() error {
-	exists, err := re.DBExists()
+func (re *RethinkDB) createDBIfNotExist() error {
+	exists, err := re.dbExists()
 	if err != nil {
 		return err
 	}
@@ -59,8 +60,8 @@ func (re *RethinkDB) CreateDBIfNotExist() error {
 	return nil
 }
 
-func (re *RethinkDB) CreateTableIfNotExist(table string) error {
-	exists, err := re.TableExists(table)
+func (re *RethinkDB) createTableIfNotExist(table string) error {
+	exists, err := re.tableExists(table)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (re *RethinkDB) CreateTableIfNotExist(table string) error {
 	return nil
 }
 
-func (re *RethinkDB) DBExists() (bool, error) {
+func (re *RethinkDB) dbExists() (bool, error) {
 	var response []interface{}
 	res, err := r.DBList().Run(re.session)
 
@@ -97,7 +98,7 @@ func (re *RethinkDB) DBExists() (bool, error) {
 	return false, nil
 }
 
-func (re *RethinkDB) TableExists(table string) (bool, error) {
+func (re *RethinkDB) tableExists(table string) (bool, error) {
 	var response []interface{}
 	res, err := r.DB(re.Database).TableList().Run(re.session)
 
@@ -140,8 +141,8 @@ func (re *RethinkDB) CreateAlerts(alerts []models.Alert) (ids []string, err erro
 	return writeResponse.GeneratedKeys, nil
 }
 
-func (re *RethinkDB) FindOneAlert(filter interface{}) (alert models.Alert, foundOne bool, err error) {
-	alerts, err := re.FindAlerts(filter)
+func (re *RethinkDB) findOneAlert(filter interface{}) (alert models.Alert, foundOne bool, err error) {
+	alerts, err := re.findAlerts(filter)
 	if err != nil {
 		return
 	}
@@ -156,7 +157,7 @@ func (re *RethinkDB) FindOneAlert(filter interface{}) (alert models.Alert, found
 	return
 }
 
-func (re *RethinkDB) FindAlerts(filter interface{}) (alerts []models.Alert, err error) {
+func (re *RethinkDB) findAlerts(filter interface{}) (alerts []models.Alert, err error) {
 	res, err := r.DB(re.Database).Table("alerts").Filter(filter).Run(re.session)
 	if err != nil {
 		return
@@ -169,6 +170,11 @@ func (re *RethinkDB) FindAlerts(filter interface{}) (alerts []models.Alert, err 
 	return
 }
 
+func (re *RethinkDB) FindAlerts(queryArgs *fasthttp.Args) (alerts []models.Alert, err error) {
+	filter := BuildAlertsFilter(queryArgs)
+	return re.findAlerts(filter)
+}
+
 func (re *RethinkDB) FindDuplicateAlert(alert models.Alert) (existingAlert models.Alert, alertIsDuplicate bool, err error) {
 	findDuplicateAlert := map[string]interface{}{
 		"event":       alert.Event,
@@ -178,7 +184,7 @@ func (re *RethinkDB) FindDuplicateAlert(alert models.Alert) (existingAlert model
 		"customer":    alert.Customer,
 	}
 
-	existingAlert, alertIsDuplicate, err = re.FindOneAlert(findDuplicateAlert)
+	existingAlert, alertIsDuplicate, err = re.findOneAlert(findDuplicateAlert)
 
 	return
 }
@@ -192,7 +198,7 @@ func (re *RethinkDB) FindCorrelatedAlert(alert models.Alert) (existingAlert mode
 			user.Field("severity").Ne(alert.Severity))
 	}
 
-	existingAlert, alertIsCorrelated, err = re.FindOneAlert(correlatedFilter)
+	existingAlert, alertIsCorrelated, err = re.findOneAlert(correlatedFilter)
 
 	return
 }
@@ -259,7 +265,12 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 	return
 }
 
-func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(filter interface{}) (groupedServices []models.GroupedService, err error) {
+func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(queryArgs *fasthttp.Args) (groupedServices []models.GroupedService, err error) {
+	filter := BuildAlertsFilter(queryArgs)
+
+	//This query unwinds the service field which duplicates the alert per service. It then groups by both environment and service.
+	//Most of the time the service field only has one service but the alerta api made this field into a list for some reason.
+	//If it is decided that the service field can only represent a single service then this query can be greatly simplified.
 	t := r.DB(re.Database).Table("alerts").Filter(filter).ConcatMap(func(alert r.Term) r.Term {
 		return alert.Field("service").Map(func(service r.Term) r.Term {
 			return r.Object(
@@ -285,7 +296,8 @@ func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(filter interface{}) (g
 	return
 }
 
-func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(filter interface{}) (groupedEnvironments []models.GroupedEnvironment, err error) {
+func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(queryArgs *fasthttp.Args) (groupedEnvironments []models.GroupedEnvironment, err error) {
+	filter := BuildAlertsFilter(queryArgs)
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group("environment").Count().Ungroup().Map(func(result r.Term) r.Term {
 		return r.Object(
 			"environment", result.Field("group"),
@@ -303,8 +315,9 @@ func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(filter interface{}
 	}
 	return
 }
-//r.db("alerta").table("alerts").group("severity").count().ungroup().map(r.object(r.row("group"),r.row("reduction"))).reduce(function(left, right){return left.merge(right)})
-func (re *RethinkDB) CountAlertsGroup(group string, filter interface{}) (alertCountGroup map[string]int, err error) {
+
+func (re *RethinkDB) CountAlertsGroup(group string, queryArgs *fasthttp.Args) (alertCountGroup map[string]int, err error) {
+	filter := BuildAlertsFilter(queryArgs)
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group(group).Count().Ungroup().Map(
 		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term)(r.Term){
 		return left.Merge(right)

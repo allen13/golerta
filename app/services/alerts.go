@@ -2,7 +2,6 @@ package services
 
 import (
 	"github.com/allen13/golerta/app/db"
-	"github.com/allen13/golerta/app/filters"
 	"github.com/allen13/golerta/app/models"
 	"github.com/valyala/fasthttp"
 )
@@ -59,7 +58,7 @@ func (as *AlertService) GetAlert(id string) (alertResponse models.AlertResponse,
 }
 
 func (as *AlertService) GetAlerts(queryArgs *fasthttp.Args) (alertsResponse models.AlertsResponse, err error) {
-	alerts, err := as.DB.FindAlerts(filters.BuildAlertsFilter(queryArgs))
+	alerts, err := as.DB.FindAlerts(queryArgs)
 	if err != nil {
 		return
 	}
@@ -74,11 +73,11 @@ func (as *AlertService) DeleteAlert(id string) (err error) {
 }
 
 func (as *AlertService) GetAlertsCount(queryArgs *fasthttp.Args)(models.AlertsCountResponse,error) {
-	severityCounts, err := as.DB.CountAlertsGroup("severity", filters.BuildAlertsFilter(queryArgs))
+	severityCounts, err := as.DB.CountAlertsGroup("severity", queryArgs)
 	if err != nil{
 		return models.AlertsCountResponse{}, err
 	}
-	statusCounts, err := as.DB.CountAlertsGroup("status", filters.BuildAlertsFilter(queryArgs))
+	statusCounts, err := as.DB.CountAlertsGroup("status", queryArgs)
 	if err != nil{
 		return models.AlertsCountResponse{}, err
 	}
@@ -87,7 +86,7 @@ func (as *AlertService) GetAlertsCount(queryArgs *fasthttp.Args)(models.AlertsCo
 }
 
 func (as *AlertService) GetGroupedServices(queryArgs *fasthttp.Args)(models.GroupedServiceResponse,error) {
-	groupedServices, err := as.DB.GetAlertServicesGroupedByEnvironment(filters.BuildAlertsFilter(queryArgs))
+	groupedServices, err := as.DB.GetAlertServicesGroupedByEnvironment(queryArgs)
 	if err != nil{
 		return models.GroupedServiceResponse{}, err
 	}
@@ -96,7 +95,7 @@ func (as *AlertService) GetGroupedServices(queryArgs *fasthttp.Args)(models.Grou
 }
 
 func (as *AlertService) GetGroupedEnvironments(queryArgs *fasthttp.Args)(models.GroupedEnvironmentResponse,error) {
-	groupedEnvironments, err := as.DB.GetAlertEnvironmentsGroupedByEnvironment(filters.BuildAlertsFilter(queryArgs))
+	groupedEnvironments, err := as.DB.GetAlertEnvironmentsGroupedByEnvironment(queryArgs)
 	if err != nil{
 		return models.GroupedEnvironmentResponse{}, err
 	}

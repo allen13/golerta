@@ -1,4 +1,4 @@
-package filters
+package rethinkdb
 
 import (
 	"github.com/valyala/fasthttp"
@@ -6,21 +6,24 @@ import (
 )
 
 var QUERY_PARAMS []string = []string{
+	"id",
 	"status",
 	"environment",
 	"service",
 }
 
 func BuildAlertsFilter(queryArgs *fasthttp.Args) (rowFilter r.Term) {
-	for i, queryParam := range QUERY_PARAMS {
+	var firstParam = true
+	for _, queryParam := range QUERY_PARAMS {
 		if !queryArgs.Has(queryParam){
 			continue
 		}
 
 		paramFilter := buildQueryForParam(queryParam, queryArgs)
 
-		if i == 0 {
+		if firstParam {
 			rowFilter = paramFilter
+			firstParam = false
 		}else {
 			rowFilter = rowFilter.And(paramFilter)
 		}

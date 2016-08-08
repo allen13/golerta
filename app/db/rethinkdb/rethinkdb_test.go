@@ -4,6 +4,7 @@ import (
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
 	"testing"
+	"github.com/valyala/fasthttp"
 )
 
 //Integration test for alert CRUD operations
@@ -46,7 +47,7 @@ func TestRethinkDB_CRUDAlert(t *testing.T) {
 	//Find the alert
 	filter := make(map[string]interface{})
 	filter["event"] = alert.Event
-	dbAlert, foundAlert, err := db.FindOneAlert(filter)
+	dbAlert, foundAlert, err := db.findOneAlert(filter)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +90,9 @@ func TestRethinkDB_GetServicesGroupedByEnvironment(t *testing.T) {
 	}
 
 	//Find the alert
-	groupedServices, err := db.GetAlertServicesGroupedByEnvironment(r.Row.Field("id").Eq(id))
+	queryArgs := fasthttp.Args{}
+	queryArgs.Add("id", id)
+	groupedServices, err := db.GetAlertServicesGroupedByEnvironment(&queryArgs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +117,7 @@ func TestRethinkDB_FailToFindOneAlert(t *testing.T) {
 	filter := make(map[string]interface{})
 	filter["event"] = "DOES NOT EXIST"
 
-	_, foundOne, err := db.FindOneAlert(filter)
+	_, foundOne, err := db.findOneAlert(filter)
 	if err != nil {
 		t.Fatal("Failed while finding an alert that does not exist")
 	}
