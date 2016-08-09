@@ -102,3 +102,8 @@ func (as *AlertService) GetGroupedEnvironments(queryArgs *fasthttp.Args)(models.
 
 	return models.NewGroupedEnvironmentResponse(groupedEnvironments), nil
 }
+
+func (as *AlertService) UpdateAlertStatus(id, status, text string) (err error){
+	err = as.DB.UpdateAlertStatus(id, status, text)
+	return
+}

@@ -4,6 +4,7 @@ import (
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
 	"github.com/valyala/fasthttp"
+	"time"
 )
 
 type RethinkDB struct {
@@ -231,6 +232,7 @@ func (re *RethinkDB) UpdateAlert(id string, updates map[string]interface{}) erro
 
 func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingId string, duplicateAlert models.Alert) (err error) {
 	alertUpdate := map[string]interface{}{
+		"status":          duplicateAlert.Status,
 		"value":           duplicateAlert.Value,
 		"text":            duplicateAlert.Text,
 		"tags":            duplicateAlert.Tags,
@@ -332,5 +334,28 @@ func (re *RethinkDB) CountAlertsGroup(group string, queryArgs *fasthttp.Args) (a
 	if alertCountGroup == nil {
 		alertCountGroup = map[string]int{}
 	}
+	return
+}
+
+func (re *RethinkDB) UpdateAlertStatus(id, status, text string)(err error) {
+	alert, err := re.GetAlert(id)
+	if err != nil {
+		return err
+	}
+
+	historyEvent := models.HistoryEvent{
+		Id: alert.Id,
+		Event: alert.Event,
+		Status: status,
+		Text: text,
+		Type: "external",
+		UpdateTime: time.Now(),
+	}
+
+	updates := map[string]interface{}{
+		"status": status,
+		"history": r.Row.Field("history").Prepend(historyEvent),
+	}
+	err = re.UpdateAlert(id, updates)
 	return
 }

@@ -96,6 +96,7 @@ type Alert struct {
 type HistoryEvent struct {
 	Id         string    `gorethink:"id,omitempty" json:"id"`
 	Event      string    `gorethink:"event" json:"event"`
+	Status     string    `gorethink:"status" json:"status"`
 	Severity   string    `gorethink:"severity" json:"severity"`
 	Value      string    `gorethink:"value" json:"value"`
 	Type       string    `gorethink:"type" json:"type"`
@@ -127,6 +128,7 @@ func (alert *Alert) GenerateDefaults() {
 
 	if alert.LastReceiveTime.IsZero() {
 		alert.LastReceiveTime = time.Now()
+		alert.LastReceiveId = alert.Id
 	}
 
 	alert.History = []HistoryEvent{HistoryEvent{
@@ -175,7 +177,7 @@ func NewAlertsResponse(alerts []Alert) (ar AlertsResponse) {
 	ar.Total = len(alerts)
 	ar.Status = "ok"
 	ar.AutoRefresh = true
-	if ar.Total > 0{
+	if ar.Total > 0 {
 		ar.LastTime = alerts[0].CreateTime
 	}
 	ar.More = false
