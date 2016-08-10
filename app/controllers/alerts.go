@@ -14,14 +14,14 @@ type AlertsController struct {
 }
 
 func (ac *AlertsController) Init() {
-	ac.HTTP.Post("/alert", ac.createAlert)
-	ac.HTTP.Get("/alert/:alert", ac.getAlert)
-	ac.HTTP.Get("/alerts", ac.getAlerts)
-	ac.HTTP.Post("/alert/:alert/status", ac.updateAlertStatus)
-	ac.HTTP.Delete("/alert/:alert", ac.deleteAlert)
-	ac.HTTP.Get("/alerts/count", ac.getAlertsCount)
-	ac.HTTP.Get("/alerts/services", ac.getAlertsServices)
-	ac.HTTP.Get("/alerts/environments", ac.getAlertsEnvironments)
+	ac.HTTP.Post("/alert", ac.AuthMiddleware.Serve, ac.createAlert)
+	ac.HTTP.Get("/alert/:alert", ac.AuthMiddleware.Serve, ac.getAlert)
+	ac.HTTP.Get("/alerts", ac.AuthMiddleware.Serve, ac.getAlerts)
+	ac.HTTP.Post("/alert/:alert/status", ac.AuthMiddleware.Serve, ac.updateAlertStatus)
+	ac.HTTP.Delete("/alert/:alert", ac.AuthMiddleware.Serve, ac.deleteAlert)
+	ac.HTTP.Get("/alerts/count", ac.AuthMiddleware.Serve, ac.getAlertsCount)
+	ac.HTTP.Get("/alerts/services", ac.AuthMiddleware.Serve, ac.getAlertsServices)
+	ac.HTTP.Get("/alerts/environments", ac.AuthMiddleware.Serve, ac.getAlertsEnvironments)
 
 }
 

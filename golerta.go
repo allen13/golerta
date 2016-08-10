@@ -3,25 +3,41 @@ package main
 import (
 	"github.com/allen13/golerta/app"
 	"github.com/docopt/docopt-go"
+	"log"
+	"fmt"
+	"github.com/allen13/golerta/app/auth/token"
+	"github.com/allen13/golerta/app/config"
 )
 
 const version = "Golerta 0.0.1"
 const usage = `Golerta.
 
 Usage:
-  golerta --config=<config>
-  golerta --help
-  golerta --version
+	golerta server [--config=<config>]
+	golerta createAgentToken <name> [--config=<config>]
+	golerta --help
+	golerta --version
 
 Options:
-  --config=<config>            The golerta config [default: /etc/golerta/golerta.conf].
+  --config=<config>            The golerta config [default: ./golerta.toml].
   --help                       Show this screen.
   --version                    Show version.
 `
 
 func main() {
-	args, _ := docopt.Parse(usage, nil, true, version, false)
+	args, err := docopt.Parse(usage, nil, true, version, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	configFile := args["--config"].(string)
-	http := app.BuildApp(configFile)
-	http.Listen(":5608")
+	config := config.BuildConfig(configFile)
+
+	if args["server"].(bool){
+		http := app.BuildApp(config)
+		http.Listen(":5608")
+	}
+
+	if args["createAgentToken"].(bool){
+		fmt.Println(token.CreateExpirationFreeAgentToken(args["<name>"].(string), config.Golerta.SigningKey))
+	}
 }

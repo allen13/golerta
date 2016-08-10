@@ -1,32 +1,17 @@
 package app
 
 import (
-	"github.com/BurntSushi/toml"
 	"github.com/allen13/golerta/app/auth"
-	"github.com/allen13/golerta/app/auth/ldap"
 	"github.com/allen13/golerta/app/controllers"
-	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/services"
 	"github.com/dgrijalva/jwt-go"
 	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris"
 	"log"
+	"github.com/allen13/golerta/app/config"
 )
 
-type GolertaConfig struct {
-	Golerta   golerta
-	Ldap      ldap.LDAPAuthProvider
-	Rethinkdb rethinkdb.RethinkDB
-}
-
-type golerta struct {
-	SigningKey   string `toml:"signing_key"`
-	AuthProvider string `toml:"auth_provider"`
-}
-
-func BuildApp(configFile string) (http *iris.Framework) {
-	config := BuildConfig(configFile)
-
+func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	err := config.Rethinkdb.Init()
 	if err != nil {
 		log.Fatal(err)
@@ -54,24 +39,7 @@ func BuildApp(configFile string) (http *iris.Framework) {
 	return
 }
 
-func BuildConfig(configFile string) (config GolertaConfig) {
-	_, err := toml.DecodeFile(configFile, &config)
-
-	if err != nil {
-		log.Fatal("config file error: " + err.Error())
-	}
-
-	setDefaultConfigs(&config)
-	return
-}
-
-func setDefaultConfigs(config *GolertaConfig) {
-	if config.Golerta.AuthProvider == "" {
-		config.Golerta.AuthProvider = "ldap"
-	}
-}
-
-func BuildAuthProvider(config GolertaConfig, http *iris.Framework) {
+func BuildAuthProvider(config config.GolertaConfig, http *iris.Framework) {
 	var authProvider auth.AuthProvider
 	switch config.Golerta.AuthProvider {
 	case "ldap":

@@ -8,6 +8,7 @@ import (
 	"github.com/kataras/iris"
 	"gopkg.in/ldap.v2"
 	"time"
+	"github.com/allen13/golerta/app/auth/token"
 )
 
 type LDAPAuthProvider struct {
@@ -62,7 +63,6 @@ func (lc *LDAPAuthProvider) LoginHandler(ctx *iris.Context) {
 }
 
 func (lc *LDAPAuthProvider) createToken(username string) (string, error) {
-	mySigningKey := []byte(lc.signingKey)
 	expirationTimestamp := time.Now().Add(time.Hour * 48).Unix()
 	claims := jwt.MapClaims{
 		"jti": username,
@@ -72,13 +72,8 @@ func (lc *LDAPAuthProvider) createToken(username string) (string, error) {
 		//Everyone who logs in is an admin by default for now. Could check ldap groups for this.
 		"role": "admin",
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	ss, err := token.SignedString(mySigningKey)
-	if err != nil {
-		return "", err
-	}
-	return ss, nil
+	return token.CreateToken(lc.signingKey, claims)
 }
 
 func (lc *LDAPAuthProvider) SetSigningKey(key string) {
