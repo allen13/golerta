@@ -2,7 +2,7 @@
 
 angular.module('config', [])
   .constant('config', {
-    'endpoint'    : "http://"+window.location.hostname+":5608",
+    'endpoint'    : "http://"+window.location.hostname+":"+window.location.port,
     'provider'    : "basic", // google, github, gitlab or basic
     'client_id'   : "INSERT-CLIENT-ID-HERE",
     'gitlab_url'  : "https://gitlab.com",  // replace with your gitlab server
