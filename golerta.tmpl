@@ -1,0 +1,15 @@
+[golerta]
+    signing_key = "{{ .Env.SIGNING_KEY }}"
+    auth_provider = "{{ .Env.AUTH_PROVIDER }}"
+
+[ldap]
+    host = "{{ .Env.LDAP_HOST }}"
+    port = {{ .Env.LDAP_PORT }}
+    base_dn = "{{ .Env.LDAP_BASE_DN }}"
+    bind_dn = "{{ .Env.LDAP_BIND_DN }}"
+    bind_password = "{{ .Env.LDAP_BIND_PASSWORD }}"
+    user_filter = "{{ .Env.LDAP_USER_FILTER }}"
+
+[rethinkdb]
+    address = "{{ .Env.RETHINKDB_ADDRESS }}"
+    database = "{{ .Env.RETHINKDB_DATABASE }}"

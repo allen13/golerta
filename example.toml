@@ -1,5 +1,5 @@
 [golerta]
-    signing_key = "AllYourBase"
+    signing_key = "CHANGEME"
     auth_provider = "ldap"
 
 [ldap]
@@ -9,3 +9,7 @@
     bind_dn = "cn=read-only-admin,dc=example,dc=com"
     bind_password = "password"
     user_filter = "(uid=%s)"
+
+[rethinkdb]
+    address = "localhost:28015"
+    database = "golerta"
