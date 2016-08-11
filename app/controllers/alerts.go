@@ -34,7 +34,10 @@ func (ac *AlertsController) createAlert(ctx *iris.Context) {
 	}
 
 	alertsResponse, err := ac.AlertService.ProcessAlert(incomingAlert)
-	models.StandardResponse(ctx, alertsResponse, err)
+	if err != nil {
+		ctx.JSON(iris.StatusInternalServerError, models.ErrorResponse{Status: "error", Message: err.Error()})
+	}
+	ctx.JSON(iris.StatusCreated, alertsResponse)
 }
 
 func (ac *AlertsController) getAlerts(ctx *iris.Context) {
