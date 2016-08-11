@@ -59,10 +59,12 @@ func BuildAuthProvider(config config.GolertaConfig, http *iris.Framework) {
 }
 
 func BuildAuthorizationMiddleware(signingKey string) *jwtmiddleware.Middleware {
-	return jwtmiddleware.New(jwtmiddleware.Config{
+	jwtCofig := jwtmiddleware.Config{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			return []byte(signingKey), nil
 		},
 		SigningMethod: jwt.SigningMethodHS256,
-	})
+		Extractor: jwtmiddleware.FromFirst(jwtmiddleware.FromAuthHeader, jwtmiddleware.FromParameter("api-key")),
+	}
+	return jwtmiddleware.New(jwtCofig)
 }
