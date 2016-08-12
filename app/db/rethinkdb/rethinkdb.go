@@ -230,7 +230,7 @@ func (re *RethinkDB) UpdateAlert(id string, updates map[string]interface{}) erro
 	return nil
 }
 
-func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingId string, duplicateAlert models.Alert) (err error) {
+func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert, duplicateAlert models.Alert) (err error) {
 	alertUpdate := map[string]interface{}{
 		"status":          duplicateAlert.Status,
 		"value":           duplicateAlert.Value,
@@ -241,9 +241,13 @@ func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingId string, duplica
 		"lastReceiveId":   duplicateAlert.Id,
 		"lastReceiveTime": duplicateAlert.ReceiveTime,
 		"duplicateCount":  r.Row.Field("duplicateCount").Add(1),
-		"history":         r.Row.Field("history").Prepend(duplicateAlert.History[0]),
 	}
-	err = re.UpdateAlert(existingId, alertUpdate)
+
+	if existingAlert.Status != duplicateAlert.Status {
+		alertUpdate["history"] = r.Row.Field("history").Prepend(duplicateAlert.History[0])
+	}
+
+	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
 	return
 }
 

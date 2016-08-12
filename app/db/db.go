@@ -13,7 +13,7 @@ type DB interface {
 	DeleteAlert(id string) error
 	UpdateAlert(id string, updates map[string]interface{}) error
 	UpdateAlertStatus(id, status, text string)(err error)
-	UpdateExistingAlertWithDuplicate(existingId string, duplicateAlert models.Alert) (err error)
+	UpdateExistingAlertWithDuplicate(existingAlert models.Alert, duplicateAlert models.Alert) (err error)
 	UpdateExistingAlertWithCorrelated(existingAlert models.Alert, correlatedAlert models.Alert) (err error)
 	FindAlerts(queryArgs *fasthttp.Args) (alerts []models.Alert, err error)
 	FindDuplicateAlert(alert models.Alert) (existingAlert models.Alert, alertIsDuplicate bool, err error)

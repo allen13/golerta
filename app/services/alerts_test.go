@@ -40,16 +40,16 @@ func TestAlertService_ProcessAlert(t *testing.T) {
 		t.Fatal("Created two separate alerts instead of updating the first duplicate alert")
 	}
 
-	retrievedAlert, err := as.GetAlert(alertId1)
+	retrievedAlertResponse, err := as.GetAlert(alertId1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if retrievedAlert.DuplicateCount < 1 {
+	if retrievedAlertResponse.Alert.DuplicateCount < 1 {
 		t.Fatal("Failed to update duplicate field")
 	}
 
-	if retrievedAlert.DuplicateCount > 1 {
+	if retrievedAlertResponse.Alert.DuplicateCount > 1 {
 		t.Fatal("Duplicate field was updated too many times")
 	}
 
@@ -101,12 +101,12 @@ func TestAlertService_ProcessCorrelatedAlerts(t *testing.T) {
 		t.Fatal("Created two separate alerts instead of updating the first correlated alert")
 	}
 
-	retrievedAlert, err := as.GetAlert(alertId1)
+	retrievedAlertResponse, err := as.GetAlert(alertId1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if retrievedAlert.DuplicateCount != 0 {
+	if retrievedAlertResponse.Alert.DuplicateCount != 0 {
 		err = as.DeleteAlert(alertId1)
 		if err != nil {
 			t.Fatal(err)

@@ -20,7 +20,7 @@ func (as *AlertService) ProcessAlert(alert models.Alert) (id string, err error) 
 	}
 
 	if alertIsDuplicate {
-		err = as.DB.UpdateExistingAlertWithDuplicate(existingAlert.Id, alert)
+		err = as.DB.UpdateExistingAlertWithDuplicate(existingAlert, alert)
 		if err != nil {
 			return
 		}
