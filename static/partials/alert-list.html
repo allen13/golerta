@@ -39,7 +39,6 @@
           <th class="hidden-xs"><a href="" ng-click="predicate = 'status'; reverse=!reverse">Status&nbsp;<span ng-hide="predicate != 'status'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-lg"><a href="" ng-click="predicate = 'lastReceiveTime'; reverse=!reverse">Time&nbsp;<span ng-hide="predicate != 'lastReceiveTime'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="visible-lg"><a href="" ng-click="predicate = 'lastReceiveTime'; reverse=!reverse">Last Receive Time&nbsp;<span ng-hide="predicate != 'lastReceiveTime'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
-          <th class="visible-lg"><a href="" ng-click="predicate = 'duplicateCount'; reverse=!reverse">Dupl.&nbsp;<span ng-hide="predicate != 'duplicateCount'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-xs" ng-show="isCustomerViews() && isAdmin();"><a href="" ng-click="predicate = 'customer'; reverse=!reverse">Customer&nbsp;<span ng-hide="predicate != 'customer'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = 'environment'; reverse=!reverse">Environment&nbsp;<span ng-hide="predicate != 'environment'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = 'service'; reverse=!reverse">Service&nbsp;<span ng-hide="predicate != 'service'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
@@ -56,7 +55,6 @@
           <td class="hidden-xs"><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td>
           <td class="hidden-lg">{{ alert.lastReceiveTime | date:shortTime }}</td>
           <td class="visible-lg">{{ alert.lastReceiveTime | date:mediumDate }}</td>
-          <td class="visible-lg">{{ alert.duplicateCount }}</td>
           <td class="hidden-xs" ng-show="isCustomerViews() && isAdmin();">{{ alert.customer }}</td>
           <td class="hidden-xs">{{ alert.environment }}</td>
           <td class="hidden-xs">{{ alert.service.join(', ') }}</td>
