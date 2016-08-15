@@ -28,7 +28,7 @@ Get golerta code and run it with the example config.
 
     go get github.com/allen13/golerta
     cd $GOPATH/github.com/allen13/golerta
-    godep go run golerta.go --config example.toml
+    godep go run golerta.go server --config example.toml
 
 Log in using credentials from the [forumsys test ldap server](http://www.forumsys.com/en/tutorials/integration-how-to/ldap/online-ldap-test-server/) 
 
