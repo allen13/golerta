@@ -5,6 +5,11 @@ A simplified reimplementation of [alerta](https://github.com/guardian/alerta) in
 focus so the biggest change will be using LDAP for the authentication system. Additionally, I will be looking
 to reimplement the backend in RethinkDB for simplified clustering and querying.
 
+docker image
+------------
+
+    docker run -p 5608:5608 -e RETHINKDB_ADDRESS=your-rethinkdb-host:28015 allen13/golerta:latest
+    
 development environment
 -----------------------
 
