@@ -2,8 +2,8 @@ package rethinkdb
 
 import (
 	"github.com/allen13/golerta/app/models"
-	r "gopkg.in/dancannon/gorethink.v2"
 	"github.com/valyala/fasthttp"
+	r "gopkg.in/dancannon/gorethink.v2"
 	"time"
 )
 
@@ -241,6 +241,7 @@ func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert
 		"lastReceiveId":   duplicateAlert.Id,
 		"lastReceiveTime": duplicateAlert.ReceiveTime,
 		"duplicateCount":  r.Row.Field("duplicateCount").Add(1),
+		"timeout":         duplicateAlert.Timeout,
 	}
 
 	if existingAlert.Status != duplicateAlert.Status {
@@ -265,6 +266,7 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 		"repeat":           false,
 		"lastReceiveId":    correlatedAlert.Id,
 		"lastReceiveTime":  correlatedAlert.ReceiveTime,
+		"timeout":          correlatedAlert.Timeout,
 		"history":          r.Row.Field("history").Prepend(correlatedAlert.History[0]),
 	}
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
@@ -325,7 +327,7 @@ func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(queryArgs *fasthtt
 func (re *RethinkDB) CountAlertsGroup(group string, queryArgs *fasthttp.Args) (alertCountGroup map[string]int, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group(group).Count().Ungroup().Map(
-		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term)(r.Term){
+		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term) r.Term {
 		return left.Merge(right)
 	})
 
@@ -341,23 +343,23 @@ func (re *RethinkDB) CountAlertsGroup(group string, queryArgs *fasthttp.Args) (a
 	return
 }
 
-func (re *RethinkDB) UpdateAlertStatus(id, status, text string)(err error) {
+func (re *RethinkDB) UpdateAlertStatus(id, status, text string) (err error) {
 	alert, err := re.GetAlert(id)
 	if err != nil {
 		return err
 	}
 
 	historyEvent := models.HistoryEvent{
-		Id: alert.Id,
-		Event: alert.Event,
-		Status: status,
-		Text: text,
-		Type: "external",
+		Id:         alert.Id,
+		Event:      alert.Event,
+		Status:     status,
+		Text:       text,
+		Type:       "external",
 		UpdateTime: time.Now(),
 	}
 
 	updates := map[string]interface{}{
-		"status": status,
+		"status":  status,
 		"history": r.Row.Field("history").Prepend(historyEvent),
 	}
 	err = re.UpdateAlert(id, updates)
