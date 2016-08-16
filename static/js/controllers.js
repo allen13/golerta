@@ -104,8 +104,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     }
 
     $scope.show = [
-      {name: 'Open', value: ['open', 'unknown']},
-      {name: 'Active', value: ['open', 'ack', 'assign']},
+      {name: 'Open', value: ['open', 'unknown','ack', 'assign']},
       {name: 'Closed', value: ['closed', 'expired']}
     ];
     $scope.status = $scope.show[0];
