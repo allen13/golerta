@@ -365,3 +365,30 @@ func (re *RethinkDB) UpdateAlertStatus(id, status, text string) (err error) {
 	err = re.UpdateAlert(id, updates)
 	return
 }
+
+func (re *RethinkDB) EscalateTimedOutAlerts() error {
+	timedOutAlerts := r.Row.Field("severity").Ne("critical").And(
+		r.Row.Field("timeout").Ne(0)).And(
+		r.Row.Field("lastReceiveTime").Add(r.Row.Field("timeout")).Lt(r.Now()))
+
+	criticalUpdate := map[string]interface{}{
+		"severity": "critical",
+		"value": "ALERT TIMED OUT",
+		"history": r.Row.Field("history").Prepend(r.Object(
+			"id", r.Row.Field("id"),
+			"severity", "critical",
+			"event", r.Row.Field("event"),
+			"text", "ALERT TIMED OUT",
+			"type", "continuous query - time out",
+			"updateTime", time.Now(),
+		)),
+	}
+
+	updateEachTimedOutAlert := r.DB(re.Database).Table("alerts").Filter(timedOutAlerts).Update(criticalUpdate)
+
+	_, err := updateEachTimedOutAlert.RunWrite(re.session)
+	if err != nil {
+		return err
+	}
+	return nil
+}

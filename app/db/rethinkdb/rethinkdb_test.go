@@ -5,6 +5,7 @@ import (
 	r "gopkg.in/dancannon/gorethink.v2"
 	"testing"
 	"github.com/valyala/fasthttp"
+	"time"
 )
 
 //Integration test for alert CRUD operations
@@ -126,6 +127,49 @@ func TestRethinkDB_FailToFindOneAlert(t *testing.T) {
 		t.Fatal("Should not have found an alert")
 	}
 
+}
+
+func TestRethinkDB_UpdateStatusForTimedOutAlerts(t *testing.T) {
+	db := getTestDB(t)
+
+	alert := &models.Alert{
+		Event:       "time out event",
+		Resource:    "testServer01",
+		Environment: "syd01",
+		Severity:    "informational",
+		Origin:      "consul-syd01",
+		LastReceiveTime: time.Now().Add(time.Second * -2),
+		Timeout: 1,
+	}
+	alert.GenerateDefaults()
+
+	//Create Alert
+	id, err := db.CreateAlert(*alert)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = db.EscalateTimedOutAlerts()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dbAlert, err := db.GetAlert(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dbAlert.Severity != "critical" || dbAlert.Value != "ALERT TIMED OUT" {
+		failMessage := "Failed to properly time out alert.\n" +
+		"Expected Severity: critical\n Actual Severity: %s\n" +
+		"Expected Value: ALERT TIMED OUT\n Actual Value: %s\n"
+
+		t.Fatalf(failMessage, dbAlert.Severity, dbAlert.Value)
+	}
+
+	err = db.DeleteAlert(id)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 //docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb

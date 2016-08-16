@@ -18,6 +18,9 @@ func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	}
 	db := &config.Rethinkdb
 
+	continuousQueryService :=	&services.ContinuousQueryService{DB: db, QueryInterval: config.Golerta.ContinuousQueryInterval.Duration}
+	go continuousQueryService.Start()
+
 	http = iris.New()
 
 	BuildAuthProvider(config, http)

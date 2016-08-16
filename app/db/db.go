@@ -21,4 +21,5 @@ type DB interface {
 	CountAlertsGroup(group string, queryArgs *fasthttp.Args) (alertCountGroup map[string]int, err error)
 	GetAlertEnvironmentsGroupedByEnvironment(queryArgs *fasthttp.Args) (groupedEnvironments []models.GroupedEnvironment, err error)
 	GetAlertServicesGroupedByEnvironment(queryArgs *fasthttp.Args) (groupedServices []models.GroupedService, err error)
+	EscalateTimedOutAlerts() error
 }

@@ -1,6 +1,7 @@
 [golerta]
     signing_key = "CHANGEME"
     auth_provider = "ldap"
+    continuous_query_interval = "5s"
 
 [ldap]
     host = "ldap.forumsys.com"

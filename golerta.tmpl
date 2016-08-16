@@ -1,6 +1,7 @@
 [golerta]
     signing_key = "{{ .Env.SIGNING_KEY }}"
     auth_provider = "{{ .Env.AUTH_PROVIDER }}"
+    continuous_query_interval = "{{ .Env.CONTINUOUS_QUERY_INTERVAL }}"
 
 [ldap]
     host = "{{ .Env.LDAP_HOST }}"
