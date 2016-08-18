@@ -102,3 +102,9 @@ table {
    margin: 0 auto;
 }
 
+.duration input {
+    display: inline;
+    margin-bottom: 3px;
+    width: 60px;
+}
+

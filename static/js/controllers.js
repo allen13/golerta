@@ -2,7 +2,7 @@
 
 /* Controllers */
 
-var alertaControllers = angular.module('alertaControllers', []);
+var alertaControllers = angular.module('alertaControllers', ['ui.bootstrap']);
 
 alertaControllers.controller('MenuController', ['$scope', '$location', '$auth', 'config',
   function($scope, $location, $auth, config) {
@@ -104,7 +104,10 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     }
 
     $scope.show = [
-      {name: 'Open', value: ['open', 'unknown','ack', 'assign']},
+      {name: 'Active', value: ['open', 'unknown','ack', 'assign', 'silenced']},
+      {name: 'Open', value: ['open']},
+      {name: 'Awknowledged', value: ['ack']},
+      {name: 'Silenced', value: ['silenced']},
       {name: 'Closed', value: ['closed', 'expired']}
     ];
     $scope.status = $scope.show[0];
@@ -317,8 +320,49 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     $scope.mediumDate = config.dates && config.dates.mediumDate || 'EEE d MMM HH:mm';
   }]);
 
-alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$routeParams', '$location', '$auth', 'config', 'Alert',
-  function($scope, $route, $routeParams, $location, $auth, config, Alert){
+alertaControllers.controller('ChangeStatusController', function ($scope, $uibModalInstance, status) {
+  $scope.status = status
+  switch(status){
+    case 'ack':
+        $scope.title = 'Awknowledge'
+        break;
+    case 'open':
+        $scope.title = 'Open'
+        break;
+    case 'closed':
+        $scope.title = 'Close'
+        break;
+    case 'silenced':
+        $scope.title = 'Silence'
+        break;
+    default:
+        $scope.title = 'Change'
+  }
+
+  $scope.comments = "updated alert status";
+  $scope.duration = {days: 0, hours: 1, minutes: 0};
+
+  $scope.changeAlertStatus = function () {
+    console.log($scope.status);
+    var response = {status: $scope.status, text: $scope.comments};
+
+    if($scope.status == 'ack'){
+        var ackDurationSeconds = $scope.duration.minutes * 60 +
+                                 $scope.duration.hours * 60 * 60 +
+                                 $scope.duration.days * 24 * 60 * 60;
+        response.duration = ackDurationSeconds;
+    };
+
+    $uibModalInstance.close(response);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+});
+
+alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$routeParams', '$location', '$auth','$uibModal','config', 'Alert',
+  function($scope, $route, $routeParams, $location, $auth, $uibModal, config, Alert){
 
     var byUser = '';
     if ($auth.isAuthenticated()) {
@@ -336,17 +380,28 @@ alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$rou
       $scope.alert = response.alert;
     });
 
-    $scope.openAlert = function(id) {
-      Alert.status({id: id}, {status: 'open', text: 'status change via console' + byUser}, function(data) {
-        $route.reload();
+    $scope.changeStatusModal = function (status) {
+      var changeStatusModal = $uibModal.open({
+        animation: true,
+        templateUrl: 'change-status-modal.html',
+        controller: 'ChangeStatusController',
+        resolve: {
+          status: function () {
+            return status;
+          }
+        }
       });
-    };
 
-    // $scope.tagAlert = function(id, tags) {
-    //   Alert.tag({id: id}, {tags: tags}, function(data) {
-    //     $route.reload();
-    //   });
-    // };
+      changeStatusModal.result.then(function (awknowledgement) {
+        awknowledgement.text = "@" + $scope.user + " : " + awknowledgement.text
+        Alert.status({id: $scope.alert.id}, awknowledgement, function(data) {
+          $route.reload();
+        });
+      }, function () {
+        //on close
+      });
+
+    };
 
     $scope.watchAlert = function(id, user) {
       Alert.tag({id: id}, {tags: ['watch:' + user]}, function(data) {
@@ -356,18 +411,6 @@ alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$rou
 
     $scope.unwatchAlert = function(id, user) {
       Alert.untag({id: id}, {tags: ['watch:' + user]}, function(data) {
-        $route.reload();
-      });
-    };
-
-    $scope.ackAlert = function(id) {
-      Alert.status({id: id}, {status: 'ack', text: 'status change via console' + byUser}, function(data) {
-        $route.reload();
-      });
-    };
-
-    $scope.closeAlert = function(id) {
-      Alert.status({id: id}, {status: 'closed', text: 'status change via console' + byUser}, function(data) {
         $route.reload();
       });
     };
