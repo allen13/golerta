@@ -50,6 +50,8 @@ func BuildAuthProvider(config config.GolertaConfig, http *iris.Framework) {
 	}
 
 	err := authProvider.Connect()
+	defer authProvider.Close()
+
 	if err != nil {
 		log.Fatal(err)
 	}

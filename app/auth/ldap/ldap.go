@@ -120,6 +120,8 @@ func (lc *LDAPAuthProvider) Close() {
 // Authenticate authenticates the user against the ldap backend
 func (lc *LDAPAuthProvider) Authenticate(username, password string) (bool, error) {
 	err := lc.Connect()
+	defer lc.Close()
+
 	if err != nil {
 		return false, err
 	}
