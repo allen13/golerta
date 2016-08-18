@@ -77,6 +77,6 @@ func (ac *AlertsController) updateAlertStatus(ctx *iris.Context) {
 		ctx.JSON(iris.StatusBadRequest, models.ErrorResponse{Status: "error", Message: err.Error()})
 	}
 
-	err = ac.AlertService.UpdateAlertStatus(ctx.Param("alert"), alertStatusUpdateRequest.Status, alertStatusUpdateRequest.Text)
+	err = ac.AlertService.UpdateAlertStatus(ctx.Param("alert"), alertStatusUpdateRequest)
 	models.StandardResponse(ctx, iris.Map{"status":"ok"}, err)
 }

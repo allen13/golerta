@@ -75,6 +75,7 @@
 
 <table class="table table-condensed table-striped">
   <tr><td><b>Status</b></td><td><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td></tr>
+  <tr ng-show="alert.status == 'ack'"><td><b>Acknowledgement Duration</b></td><td>{{ alert.acknowledgement_duration }}</td></tr>
   <tr><td><b>Severity</b></td>
     <td>
       <span class="label label-{{ alert.previousSeverity }}">{{ alert.previousSeverity | capitalize }}</span>&nbsp;&rarr;&nbsp;

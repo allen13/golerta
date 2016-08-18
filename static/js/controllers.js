@@ -106,7 +106,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     $scope.show = [
       {name: 'Active', value: ['open', 'unknown','ack', 'assign', 'silenced']},
       {name: 'Open', value: ['open']},
-      {name: 'Awknowledged', value: ['ack']},
+      {name: 'Acknowledged', value: ['ack']},
       {name: 'Silenced', value: ['silenced']},
       {name: 'Closed', value: ['closed', 'expired']}
     ];
@@ -324,7 +324,7 @@ alertaControllers.controller('ChangeStatusController', function ($scope, $uibMod
   $scope.status = status
   switch(status){
     case 'ack':
-        $scope.title = 'Awknowledge'
+        $scope.title = 'Acknowledge'
         break;
     case 'open':
         $scope.title = 'Open'
@@ -350,7 +350,7 @@ alertaControllers.controller('ChangeStatusController', function ($scope, $uibMod
         var ackDurationSeconds = $scope.duration.minutes * 60 +
                                  $scope.duration.hours * 60 * 60 +
                                  $scope.duration.days * 24 * 60 * 60;
-        response.duration = ackDurationSeconds;
+        response.acknowledgement_duration = ackDurationSeconds;
     };
 
     $uibModalInstance.close(response);
@@ -392,9 +392,9 @@ alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$rou
         }
       });
 
-      changeStatusModal.result.then(function (awknowledgement) {
-        awknowledgement.text = "@" + $scope.user + " : " + awknowledgement.text
-        Alert.status({id: $scope.alert.id}, awknowledgement, function(data) {
+      changeStatusModal.result.then(function (statusUpdate) {
+        statusUpdate.text = "@" + $scope.user + " : " + statusUpdate.text
+        Alert.status({id: $scope.alert.id}, statusUpdate, function(data) {
           $route.reload();
         });
       }, function () {

@@ -343,7 +343,7 @@ func (re *RethinkDB) CountAlertsGroup(group string, queryArgs *fasthttp.Args) (a
 	return
 }
 
-func (re *RethinkDB) UpdateAlertStatus(id, status, text string) (err error) {
+func (re *RethinkDB) UpdateAlertStatus(id, status, text string, acknowledgementDuration int) (err error) {
 	alert, err := re.GetAlert(id)
 	if err != nil {
 		return err
@@ -360,6 +360,7 @@ func (re *RethinkDB) UpdateAlertStatus(id, status, text string) (err error) {
 
 	updates := map[string]interface{}{
 		"status":  status,
+		"acknowledgement_duration": acknowledgementDuration,
 		"history": r.Row.Field("history").Prepend(historyEvent),
 	}
 	err = re.UpdateAlert(id, updates)
@@ -378,7 +379,7 @@ func (re *RethinkDB) EscalateTimedOutAlerts() error {
 			"id", r.Row.Field("id"),
 			"severity", "critical",
 			"event", r.Row.Field("event"),
-			"text", "ALERT TIMED OUT",
+			"value", "ALERT TIMED OUT",
 			"type", "continuous query - time out",
 			"updateTime", time.Now(),
 		)),

@@ -60,6 +60,9 @@ type Alert struct {
 	//number of seconds before alert is considered stale
 	Timeout int `gorethink:"timeout" json:"timeout"`
 
+	//number of seconds before alert status is moved from ack -> open
+	AcknowledgementDuration int `gorethink:"acknowledgement_duration" json:"acknowledgement_duration"`
+
 	//unprocessed data eg. full syslog message or SNMP trap
 	RawData string `gorethink:"rawData" json:"rawData"`
 
