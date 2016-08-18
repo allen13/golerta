@@ -161,27 +161,27 @@ func NewAlertResponse(alert Alert) (a AlertResponse) {
 }
 
 type AlertsResponse struct {
-	Status         string    `json:"status"`
-	Total          int       `json:"total"`
-	Alerts         []Alert   `json:"alerts"`
-	Page           int       `json:"page"`
-	PageSize       int       `json:"pageSize"`
-	Pages          int       `json:"pages"`
-	More           bool      `json:"more"`
-	SeverityCounts int       `json:"severityCounts"`
-	StatusCounts   int       `json:"statusCounts"`
-	LastTime       time.Time `json:"lastTime"`
-	AutoRefresh    bool      `json:"autoRefresh"`
+	Status         string                   `json:"status"`
+	Total          int                      `json:"total"`
+	Alerts         []map[string]interface{} `json:"alerts"`
+	Page           int                      `json:"page"`
+	PageSize       int                      `json:"pageSize"`
+	Pages          int                      `json:"pages"`
+	More           bool                     `json:"more"`
+	SeverityCounts int                      `json:"severityCounts"`
+	StatusCounts   int                      `json:"statusCounts"`
+	LastTime       time.Time                `json:"lastTime"`
+	AutoRefresh    bool                     `json:"autoRefresh"`
 }
 
-func NewAlertsResponse(alerts []Alert) (ar AlertsResponse) {
+func NewAlertsResponse(alerts []map[string]interface{}) (ar AlertsResponse) {
 	ar = AlertsResponse{}
 	ar.Alerts = alerts
 	ar.Total = len(alerts)
 	ar.Status = "ok"
 	ar.AutoRefresh = true
 	if ar.Total > 0 {
-		ar.LastTime = alerts[0].CreateTime
+		ar.LastTime = time.Now()
 	}
 	ar.More = false
 	ar.Page = 1

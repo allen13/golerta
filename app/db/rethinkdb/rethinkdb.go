@@ -176,6 +176,27 @@ func (re *RethinkDB) FindAlerts(queryArgs *fasthttp.Args) (alerts []models.Alert
 	return re.findAlerts(filter)
 }
 
+//A filtered list of alerts without unecessary details
+func (re *RethinkDB) GetAlertsSummary(queryArgs *fasthttp.Args) (alertsSummary []map[string]interface{}, err error) {
+	filter := BuildAlertsFilter(queryArgs)
+	res, err := r.DB(re.Database).Table("alerts").Filter(filter).WithFields(
+		"id",
+		"severity",
+		"status",
+		"lastReceiveTime",
+		"environment",
+		"service",
+		"resource",
+		"event",
+		"value").Run(re.session)
+	if err != nil {
+		return
+	}
+	defer res.Close()
+	err = res.All(&alertsSummary)
+	return
+}
+
 func (re *RethinkDB) FindDuplicateAlert(alert models.Alert) (existingAlert models.Alert, alertIsDuplicate bool, err error) {
 	findDuplicateAlert := map[string]interface{}{
 		"event":       alert.Event,

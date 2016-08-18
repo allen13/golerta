@@ -58,7 +58,7 @@ func (as *AlertService) GetAlert(id string) (alertResponse models.AlertResponse,
 }
 
 func (as *AlertService) GetAlerts(queryArgs *fasthttp.Args) (alertsResponse models.AlertsResponse, err error) {
-	alerts, err := as.DB.FindAlerts(queryArgs)
+	alerts, err := as.DB.GetAlertsSummary(queryArgs)
 	if err != nil {
 		return
 	}

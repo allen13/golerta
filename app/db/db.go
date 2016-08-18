@@ -16,6 +16,7 @@ type DB interface {
 	UpdateExistingAlertWithDuplicate(existingAlert models.Alert, duplicateAlert models.Alert) (err error)
 	UpdateExistingAlertWithCorrelated(existingAlert models.Alert, correlatedAlert models.Alert) (err error)
 	FindAlerts(queryArgs *fasthttp.Args) (alerts []models.Alert, err error)
+	GetAlertsSummary(queryArgs *fasthttp.Args) (alertsSummary []map[string]interface{}, err error)
 	FindDuplicateAlert(alert models.Alert) (existingAlert models.Alert, alertIsDuplicate bool, err error)
 	FindCorrelatedAlert(alert models.Alert) (existingAlert models.Alert, alertIsCorrelated bool, err error)
 	CountAlertsGroup(group string, queryArgs *fasthttp.Args) (alertCountGroup map[string]int, err error)
