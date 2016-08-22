@@ -14,4 +14,4 @@
 [rethinkdb]
     address = "{{ .Env.RETHINKDB_ADDRESS }}"
     database = "{{ .Env.RETHINKDB_DATABASE }}"
-    alert_history_limit = "{{ .Env.RETHINKDB_ALERT_HISTORY_LIMIT }}"
+    alert_history_limit = {{ .Env.RETHINKDB_ALERT_HISTORY_LIMIT }}
