@@ -1,13 +1,13 @@
 package services
 
 import (
-	"github.com/allen13/golerta/app/db"
+	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/models"
 	"github.com/valyala/fasthttp"
 )
 
 type AlertService struct {
-	DB db.DB
+	DB rethinkdb.RethinkDB
 }
 
 func (as *AlertService) ProcessAlert(alert models.Alert) (id string, err error) {

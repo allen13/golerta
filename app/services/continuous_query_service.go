@@ -2,12 +2,12 @@ package services
 
 import (
 	"time"
-	"github.com/allen13/golerta/app/db"
+	"github.com/allen13/golerta/app/db/rethinkdb"
 	"log"
 )
 
 type ContinuousQueryService struct {
-	DB db.DB
+	DB rethinkdb.RethinkDB
 	QueryInterval time.Duration
 }
 

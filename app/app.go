@@ -16,7 +16,7 @@ func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db := &config.Rethinkdb
+	db := config.Rethinkdb
 
 	continuousQueryService :=	&services.ContinuousQueryService{DB: db, QueryInterval: config.Golerta.ContinuousQueryInterval.Duration}
 	go continuousQueryService.Start()
