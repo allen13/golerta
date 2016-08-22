@@ -8,9 +8,10 @@ import (
 )
 
 type RethinkDB struct {
-	Address  string
-	Database string
-	session  *r.Session
+	Address           string `toml:"address"`
+	Database          string `toml:"database"`
+	AlertHistoryLimit int    `toml:"alert_history_limit"`
+	session           *r.Session
 }
 
 func (re *RethinkDB) Init() error {
@@ -19,6 +20,9 @@ func (re *RethinkDB) Init() error {
 	}
 	if re.Database == "" {
 		re.Database = "alerta"
+	}
+	if re.AlertHistoryLimit == 0 {
+		re.AlertHistoryLimit = 100
 	}
 
 	return re.connect()
@@ -266,7 +270,7 @@ func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert
 	}
 
 	if existingAlert.Status != duplicateAlert.Status {
-		alertUpdate["history"] = r.Row.Field("history").Prepend(duplicateAlert.History[0])
+		alertUpdate["history"] = r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(duplicateAlert.History[0])
 	}
 
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
@@ -288,7 +292,7 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 		"lastReceiveId":    correlatedAlert.Id,
 		"lastReceiveTime":  correlatedAlert.ReceiveTime,
 		"timeout":          correlatedAlert.Timeout,
-		"history":          r.Row.Field("history").Prepend(correlatedAlert.History[0]),
+		"history":          r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(correlatedAlert.History[0]),
 	}
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
 	return
@@ -380,9 +384,9 @@ func (re *RethinkDB) UpdateAlertStatus(id, status, text string, acknowledgementD
 	}
 
 	updates := map[string]interface{}{
-		"status":  status,
+		"status":                   status,
 		"acknowledgement_duration": acknowledgementDuration,
-		"history": r.Row.Field("history").Prepend(historyEvent),
+		"history":                  r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(historyEvent),
 	}
 	err = re.UpdateAlert(id, updates)
 	return
@@ -395,8 +399,8 @@ func (re *RethinkDB) EscalateTimedOutAlerts() error {
 
 	criticalUpdate := map[string]interface{}{
 		"severity": "critical",
-		"value": "ALERT TIMED OUT",
-		"history": r.Row.Field("history").Prepend(r.Object(
+		"value":    "ALERT TIMED OUT",
+		"history": r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(r.Object(
 			"id", r.Row.Field("id"),
 			"severity", "critical",
 			"event", r.Row.Field("event"),

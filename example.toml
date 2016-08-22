@@ -14,3 +14,4 @@
 [rethinkdb]
     address = "localhost:28015"
     database = "golerta"
+    alert_history_limit = 100

@@ -35,6 +35,7 @@ ENV LDAP_BIND_PASSWORD password
 ENV LDAP_USER_FILTER (uid=%s)
 ENV RETHINKDB_ADDRESS localhost:28015
 ENV RETHINKDB_DATABASE golerta
+ENV RETHINKDB_ALERT_HISTORY_LIMIT 100
 
 CMD dockerize \
     -template ./golerta.tmpl:./golerta.toml \
