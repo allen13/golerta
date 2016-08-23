@@ -12,13 +12,18 @@ import (
 )
 
 func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
+	config.Notifiers.Init()
 	err := config.Rethinkdb.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
 	db := config.Rethinkdb
 
-	continuousQueryService :=	&services.ContinuousQueryService{DB: db, QueryInterval: config.Golerta.ContinuousQueryInterval.Duration}
+	continuousQueryService :=	&services.ContinuousQueryService{
+		DB: db,
+		QueryInterval: config.Golerta.ContinuousQueryInterval.Duration,
+		Notifiers: config.Notifiers,
+	}
 	go continuousQueryService.Start()
 
 	http = iris.New()

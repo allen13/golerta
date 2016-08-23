@@ -418,3 +418,18 @@ func (re *RethinkDB) EscalateTimedOutAlerts() error {
 	}
 	return nil
 }
+
+func (re *RethinkDB) StreamAlertChanges(alertsChannel chan models.AlertChangeFeed)(err error){
+	changesOpts := r.ChangesOpts{
+		IncludeTypes: true,
+		IncludeInitial: true,
+	}
+
+	cursor, err := r.DB(re.Database).Table("alerts").Changes(changesOpts).Run(re.session)
+	if err != nil {
+		return
+	}
+
+	cursor.Listen(alertsChannel)
+	return
+}

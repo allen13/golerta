@@ -15,11 +15,11 @@
 
   <button type="button" class="btn btn-warning"
           ng-click="changeStatusModal('silenced')"
-          ng-disabled="alert.status == 'silenced'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
+          ng-disabled="alert.status == 'silenced' || alert.status == 'closed'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
 
   <button type="button" class="btn btn-primary"
           ng-click="changeStatusModal('ack')"
-          ng-disabled="alert.status == 'ack'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
+          ng-disabled="alert.status == 'ack' || alert.status == 'closed'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
 
   <button type="button" class="btn btn-success"
           ng-click="changeStatusModal('open')"

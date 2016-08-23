@@ -190,3 +190,9 @@ func NewAlertsResponse(alerts []map[string]interface{}) (ar AlertsResponse) {
 
 	return
 }
+
+type AlertChangeFeed struct {
+	OldVal Alert  `gorethink:"old_val"`
+	NewVal Alert  `gorethink:"new_val"`
+	Type   string `gorethink:"type"`
+}

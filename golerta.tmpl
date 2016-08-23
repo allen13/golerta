@@ -15,3 +15,10 @@
     address = "{{ .Env.RETHINKDB_ADDRESS }}"
     database = "{{ .Env.RETHINKDB_DATABASE }}"
     alert_history_limit = {{ .Env.RETHINKDB_ALERT_HISTORY_LIMIT }}
+
+[notifiers]
+    trigger_severities = [{{ .Env.NOTIFIER_TRIGGER_SEVERITIES }}]
+
+[notifiers.file]
+    enabled = {{ .Env.FILE_NOTIFIER_ENABLED }}
+    files = ["stdout"]

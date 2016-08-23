@@ -4,6 +4,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/allen13/golerta/app/auth/ldap"
 	"github.com/allen13/golerta/app/db/rethinkdb"
+	"github.com/allen13/golerta/app/notifiers"
 	"log"
 	"time"
 )
@@ -12,6 +13,7 @@ type GolertaConfig struct {
 	Golerta   golerta
 	Ldap      ldap.LDAPAuthProvider
 	Rethinkdb rethinkdb.RethinkDB
+	Notifiers notifiers.Notifiers
 }
 
 type duration struct {
@@ -25,8 +27,8 @@ func (d *duration) UnmarshalText(text []byte) error {
 }
 
 type golerta struct {
-	SigningKey              string `toml:"signing_key"`
-	AuthProvider            string `toml:"auth_provider"`
+	SigningKey              string   `toml:"signing_key"`
+	AuthProvider            string   `toml:"auth_provider"`
 	ContinuousQueryInterval duration `toml:"continuous_query_interval"`
 }
 
