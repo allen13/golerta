@@ -22,3 +22,7 @@
 [notifiers.file]
     enabled = {{ .Env.FILE_NOTIFIER_ENABLED }}
     files = ["stdout"]
+
+[notifiers.pagerduty]
+    enabled = {{ .Env.PAGERDUTY_NOTIFIER_ENABLED }}
+    service_key = {{ .Env.PAGERDUTY_SERVICE_KEY }}

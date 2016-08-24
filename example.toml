@@ -22,3 +22,7 @@
 [notifiers.file]
     enabled = true
     files = ["stdout"]
+
+[notifiers.pagerduty]
+    enabled = false
+    service_key = "pagerduty service key here"
