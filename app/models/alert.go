@@ -96,6 +96,10 @@ type Alert struct {
 	History []HistoryEvent `gorethink:"history" json:"history"`
 }
 
+func (alert Alert) String() string{
+	return alert.Resource + "|" + alert.Environment + "|" + alert.Severity + "|" + alert.Event + "|" + alert.Value
+}
+
 type HistoryEvent struct {
 	Id         string    `gorethink:"id,omitempty" json:"id"`
 	Event      string    `gorethink:"event" json:"event"`

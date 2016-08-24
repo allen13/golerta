@@ -3,12 +3,14 @@ package notifiers
 import (
 	"github.com/allen13/golerta/app/models"
 	"github.com/allen13/golerta/app/notifiers/file"
+	"github.com/allen13/golerta/app/notifiers/pagerduty"
 	"log"
 )
 
 type Notifiers struct {
-	File              file.File
-	TriggerSeverities []string `toml:"trigger_severities"`
+	File              file.File           `toml:"file"`
+	PagerDuty         pagerduty.PagerDuty `toml:"pagerduty"`
+	TriggerSeverities []string            `toml:"trigger_severities"`
 	notifiers         []Notifier
 }
 
@@ -16,6 +18,8 @@ type Notifier interface {
 	Trigger(alert models.Alert) error
 	Acknowledge(alert models.Alert) error
 	Resolve(alert models.Alert) error
+	Init() error
+	Enabled() bool
 }
 
 func (ns *Notifiers) Init() {
@@ -23,12 +27,16 @@ func (ns *Notifiers) Init() {
 		ns.TriggerSeverities = []string{"critical"}
 	}
 
-	if ns.File.Enabled {
-		err := ns.File.Init()
-		if err != nil {
-			log.Println(err)
-		} else {
-			ns.notifiers = append(ns.notifiers, &ns.File)
+	uninitializedNotifiers := []Notifier{&ns.File,&ns.PagerDuty}
+
+	for _, notifier := range uninitializedNotifiers {
+		if notifier.Enabled(){
+			err := notifier.Init()
+			if err != nil {
+				log.Println(err)
+			} else {
+				ns.notifiers = append(ns.notifiers, notifier)
+			}
 		}
 	}
 }

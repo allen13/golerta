@@ -8,24 +8,28 @@ import (
 )
 
 type File struct {
-	Files   []string
-	Enabled bool
+	Files   []string `toml:"file"`
+	EnabledField bool `toml:"enabled"`
 	writer  io.Writer
 	closers []io.Closer
 }
 
+func (f *File) Enabled() bool{
+	return f.EnabledField
+}
+
 func (f *File) Trigger(alert models.Alert) error {
-	alertMessage := "triggering alert: " + alert.Resource + "|" + alert.Environment + "|" + alert.Severity + "|" + alert.Event + "|" + alert.Value
+	alertMessage := "triggering alert: " + alert.String()
 	return f.writeMessage(alertMessage)
 }
 
 func (f *File) Acknowledge(alert models.Alert) error {
-	alertMessage := "acknowledging alert: " + alert.Resource + "|" + alert.Environment + "|" + alert.Severity + "|" + alert.Event + "|" + alert.Value
+	alertMessage := "acknowledging alert: " + alert.String()
 	return f.writeMessage(alertMessage)
 }
 
 func (f *File) Resolve(alert models.Alert) error {
-	alertMessage := "resolving alert: " + alert.Resource + "|" + alert.Environment + "|" + alert.Severity + "|" + alert.Event + "|" + alert.Value
+	alertMessage := "resolving alert: " + alert.String()
 	return f.writeMessage(alertMessage)
 }
 
