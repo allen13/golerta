@@ -9,6 +9,10 @@
 			"Rev": "99064174e013895bbd9b025c31100bd1d9b590ca"
 		},
 		{
+			"ImportPath": "github.com/PagerDuty/go-pagerduty",
+			"Rev": "11b4be1545cdc8617b4bf5d13cdcd5333611b353"
+		},
+		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.9.0-15-g219c8cb",
 			"Rev": "219c8cb75c258c552e999735be6df753ffc7afdc"
