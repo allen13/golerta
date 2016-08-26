@@ -201,30 +201,15 @@ func (re *RethinkDB) GetAlertsSummary(queryArgs *fasthttp.Args) (alertsSummary [
 	return
 }
 
-func (re *RethinkDB) FindDuplicateAlert(alert models.Alert) (existingAlert models.Alert, alertIsDuplicate bool, err error) {
-	findDuplicateAlert := map[string]interface{}{
+func (re *RethinkDB) FindRelatedAlert(alert models.Alert) (relatedAlert models.Alert, foundAlert bool, err error) {
+	findRelatedAlert := map[string]interface{}{
 		"event":       alert.Event,
 		"environment": alert.Environment,
 		"resource":    alert.Resource,
-		"severity":    alert.Severity,
 		"customer":    alert.Customer,
 	}
 
-	existingAlert, alertIsDuplicate, err = re.findOneAlert(findDuplicateAlert)
-
-	return
-}
-
-func (re *RethinkDB) FindCorrelatedAlert(alert models.Alert) (existingAlert models.Alert, alertIsCorrelated bool, err error) {
-	var correlatedFilter = func(user r.Term) r.Term {
-		return user.Field("event").Eq(alert.Event).And(
-			user.Field("environment").Eq(alert.Environment)).And(
-			user.Field("resource").Eq(alert.Resource)).And(
-			user.Field("customer").Eq(alert.Customer)).And(
-			user.Field("severity").Ne(alert.Severity))
-	}
-
-	existingAlert, alertIsCorrelated, err = re.findOneAlert(correlatedFilter)
+	relatedAlert, foundAlert, err = re.findOneAlert(findRelatedAlert)
 
 	return
 }
@@ -257,20 +242,30 @@ func (re *RethinkDB) UpdateAlert(id string, updates map[string]interface{}) erro
 
 func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert, duplicateAlert models.Alert) (err error) {
 	alertUpdate := map[string]interface{}{
-		"status":          duplicateAlert.Status,
-		"value":           duplicateAlert.Value,
-		"text":            duplicateAlert.Text,
-		"tags":            duplicateAlert.Tags,
-		"rawData":         duplicateAlert.RawData,
-		"repeat":          true,
-		"lastReceiveId":   duplicateAlert.Id,
-		"lastReceiveTime": duplicateAlert.ReceiveTime,
-		"duplicateCount":  r.Row.Field("duplicateCount").Add(1),
-		"timeout":         duplicateAlert.Timeout,
+		"status":              duplicateAlert.Status,
+		"value":               duplicateAlert.Value,
+		"text":                duplicateAlert.Text,
+		"tags":                duplicateAlert.Tags,
+		"rawData":             duplicateAlert.RawData,
+		"repeat":              true,
+		"lastReceiveId":       duplicateAlert.Id,
+		"lastReceiveTime":     duplicateAlert.ReceiveTime,
+		"duplicateCount":      r.Row.Field("duplicateCount").Add(1),
+		"timeout":             duplicateAlert.Timeout,
+		"flapScore":           duplicateAlert.FlapScore,
+		"severityChangeTimes": duplicateAlert.SeverityChangeTimes,
+		"flapSeverityState":   duplicateAlert.FlapSeverityState,
 	}
 
 	if existingAlert.Status != duplicateAlert.Status {
-		alertUpdate["history"] = r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(duplicateAlert.History[0])
+		alertUpdate["history"] = r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(r.Object(
+			"id", duplicateAlert.Id,
+			"status", duplicateAlert.Status,
+			"event", duplicateAlert.Event,
+			"value", duplicateAlert.Value,
+			"type", "duplicate alert update",
+			"updateTime", duplicateAlert.CreateTime,
+		))
 	}
 
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
@@ -279,20 +274,30 @@ func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert
 
 func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Alert, correlatedAlert models.Alert) (err error) {
 	alertUpdate := map[string]interface{}{
-		"severity":         correlatedAlert.Severity,
-		"previousSeverity": existingAlert.Severity,
-		"status":           correlatedAlert.Status,
-		"value":            correlatedAlert.Value,
-		"text":             correlatedAlert.Text,
-		"tags":             correlatedAlert.Tags,
-		"createTime":       correlatedAlert.CreateTime,
-		"rawData":          correlatedAlert.RawData,
-		"duplicateCount":   0,
-		"repeat":           false,
-		"lastReceiveId":    correlatedAlert.Id,
-		"lastReceiveTime":  correlatedAlert.ReceiveTime,
-		"timeout":          correlatedAlert.Timeout,
-		"history":          r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(correlatedAlert.History[0]),
+		"severity":            correlatedAlert.Severity,
+		"previousSeverity":    existingAlert.Severity,
+		"status":              correlatedAlert.Status,
+		"value":               correlatedAlert.Value,
+		"text":                correlatedAlert.Text,
+		"tags":                correlatedAlert.Tags,
+		"createTime":          correlatedAlert.CreateTime,
+		"rawData":             correlatedAlert.RawData,
+		"duplicateCount":      0,
+		"repeat":              false,
+		"lastReceiveId":       correlatedAlert.Id,
+		"lastReceiveTime":     correlatedAlert.ReceiveTime,
+		"timeout":             correlatedAlert.Timeout,
+		"flapScore":           correlatedAlert.FlapScore,
+		"flapSeverityState":   correlatedAlert.FlapSeverityState,
+		"severityChangeTimes": correlatedAlert.SeverityChangeTimes,
+		"history": r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(r.Object(
+			"id", correlatedAlert.Id,
+			"severity", correlatedAlert.Severity,
+			"event", correlatedAlert.Event,
+			"value", correlatedAlert.Value,
+			"type", "correlated alert update",
+			"updateTime", correlatedAlert.CreateTime,
+		)),
 	}
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
 	return
@@ -419,9 +424,9 @@ func (re *RethinkDB) EscalateTimedOutAlerts() error {
 	return nil
 }
 
-func (re *RethinkDB) StreamAlertChanges(alertsChannel chan models.AlertChangeFeed)(err error){
+func (re *RethinkDB) StreamAlertChanges(alertsChannel chan models.AlertChangeFeed) (err error) {
 	changesOpts := r.ChangesOpts{
-		IncludeTypes: true,
+		IncludeTypes:   true,
 		IncludeInitial: true,
 	}
 

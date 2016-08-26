@@ -107,6 +107,9 @@
   <tr><td><b>Create Time</b></td><td>{{ alert.createTime | date:longDate }} ({{ alert.createTime | relativeDate }})</td></tr>
   <tr><td><b>Receive Time</b></td><td>{{ alert.receiveTime | date:longDate }} ({{ alert.receiveTime | relativeDate }})</td></tr>
   <tr><td><b>Last Receive Time</b></td><td>{{ alert.lastReceiveTime | date:longDate }} ({{ alert.lastReceiveTime | relativeDate }})</td></tr>
+  <tr><td><b>Flap Score</b></td><td>{{ alert.flapScore }}</td></tr>
+  <tr><td><b>Flap Severity State</b></td><td><span class="label label-{{ alert.flapSeverityState }}">{{ alert.flapSeverityState }}</span></td></tr>
+
 </table>
 
 <label><input type="checkbox" ng-model="raw"> Raw Data</label>

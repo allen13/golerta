@@ -94,9 +94,18 @@ type Alert struct {
 
 	//whenever an alert changes severity or status then a list of key alert attributes are appended to the history log
 	History []HistoryEvent `gorethink:"history" json:"history"`
+
+	//A purely informative metric that shows what the current flap score is
+	FlapScore float64 `gorethink:"flapScore" json:"flapScore"`
+
+	//The last severity state received while flapping
+	FlapSeverityState string `gorethink:"flapSeverityState" json:"flapSeverityState"`
+
+	//Used for flap detection. Updated when severities change
+	SeverityChangeTimes []time.Time `gorethink:"severityChangeTimes" json:"severityChangeTimes"`
 }
 
-func (alert Alert) String() string{
+func (alert Alert) String() string {
 	return alert.Resource + "|" + alert.Environment + "|" + alert.Severity + "|" + alert.Event + "|" + alert.Value
 }
 
@@ -143,7 +152,7 @@ func (alert *Alert) GenerateDefaults() {
 		Event:      alert.Event,
 		Severity:   alert.Severity,
 		Value:      alert.Value,
-		Type:       alert.EventType,
+		Type:       "new alert",
 		Text:       alert.Text,
 		UpdateTime: alert.CreateTime,
 	}}

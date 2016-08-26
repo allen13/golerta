@@ -3,6 +3,12 @@
     auth_provider = "{{ .Env.AUTH_PROVIDER }}"
     continuous_query_interval = "{{ .Env.CONTINUOUS_QUERY_INTERVAL }}"
 
+[flapdetection]
+    enabled = {{ .Env.FLAP_DETECTION_ENABLED }}
+    half_life_seconds = {{ .Env.FLAP_DETECTION_HALF_LIFE_SECONDS }}
+    threshold = {{ .Env.FLAP_DETECTION_THRESHOLD }}
+    minimum_score = {{ .Env.FLAP_DETECTION_MINIMUM_SCORE }}
+
 [ldap]
     host = "{{ .Env.LDAP_HOST }}"
     port = {{ .Env.LDAP_PORT }}
@@ -25,4 +31,4 @@
 
 [notifiers.pagerduty]
     enabled = {{ .Env.PAGERDUTY_NOTIFIER_ENABLED }}
-    service_key = {{ .Env.PAGERDUTY_SERVICE_KEY }}
+    service_key = "{{ .Env.PAGERDUTY_SERVICE_KEY }}"

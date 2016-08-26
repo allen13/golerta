@@ -74,6 +74,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     var colorDefaults = {
       severity: {
         critical: 'red',
+        flapping: 'red',
         major: 'orange',
         minor: 'yellow',
         warning: '#1E90FF',
@@ -209,6 +210,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
 
     var severityCodeDefaults = {
       critical: 1,
+      flapping: 1,
       major: 2,
       minor: 3,
       warning: 4,

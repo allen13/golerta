@@ -13,6 +13,8 @@ import (
 
 func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	config.Notifiers.Init()
+	config.FlapDetection.Init()
+
 	err := config.Rethinkdb.Init()
 	if err != nil {
 		log.Fatal(err)
@@ -31,7 +33,10 @@ func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	BuildAuthProvider(config, http)
 	authMiddleware := BuildAuthorizationMiddleware(config.Golerta.SigningKey)
 
-	alertsService := services.AlertService{DB: db}
+	alertsService := services.AlertService{
+		DB: &db,
+		FlapDetection: &config.FlapDetection,
+	}
 	alertsController := controllers.AlertsController{
 		HTTP:           http,
 		AlertService:   alertsService,

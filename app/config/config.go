@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/BurntSushi/toml"
+	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/auth/ldap"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/notifiers"
@@ -10,10 +11,11 @@ import (
 )
 
 type GolertaConfig struct {
-	Golerta   golerta
-	Ldap      ldap.LDAPAuthProvider
-	Rethinkdb rethinkdb.RethinkDB
-	Notifiers notifiers.Notifiers
+	Golerta       golerta
+	Ldap          ldap.LDAPAuthProvider
+	Rethinkdb     rethinkdb.RethinkDB
+	Notifiers     notifiers.Notifiers
+	FlapDetection algorithms.FlapDetection
 }
 
 type duration struct {

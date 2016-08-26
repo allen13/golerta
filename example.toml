@@ -3,6 +3,12 @@
     auth_provider = "ldap"
     continuous_query_interval = "5s"
 
+[flapdetection]
+    enabled = true
+    half_life_seconds = 60.0
+    threshold = 4.0
+    minimum_score = 0.02
+
 [ldap]
     host = "ldap.forumsys.com"
     port = 389
@@ -17,7 +23,7 @@
     alert_history_limit = 100
 
 [notifiers]
-    trigger_severities = ["critical"]
+    trigger_severities = ["critical","flapping"]
 
 [notifiers.file]
     enabled = true

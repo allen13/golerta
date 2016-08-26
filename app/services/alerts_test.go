@@ -4,11 +4,15 @@ import (
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/models"
 	"testing"
+	"github.com/allen13/golerta/app/algorithms"
 )
 
 func TestAlertService_ProcessAlert(t *testing.T) {
 	db := getTestDB(t)
-	as := &AlertService{db}
+	as := &AlertService{
+		db,
+		&algorithms.FlapDetection{},
+	}
 
 	alert := models.Alert{
 		Event:       "duplicate alert",
@@ -61,7 +65,10 @@ func TestAlertService_ProcessAlert(t *testing.T) {
 
 func TestAlertService_ProcessCorrelatedAlerts(t *testing.T) {
 	db := getTestDB(t)
-	as := &AlertService{db}
+	as := &AlertService{
+		db,
+		&algorithms.FlapDetection{},
+	}
 
 	alert := models.Alert{
 		Event:       "correlated alert",
