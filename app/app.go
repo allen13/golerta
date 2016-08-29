@@ -25,6 +25,7 @@ func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 		DB: db,
 		QueryInterval: config.Golerta.ContinuousQueryInterval.Duration,
 		Notifiers: config.Notifiers,
+		FlapDetection: &config.FlapDetection,
 	}
 	go continuousQueryService.Start()
 

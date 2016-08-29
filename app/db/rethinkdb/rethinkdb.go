@@ -175,6 +175,13 @@ func (re *RethinkDB) findAlerts(filter interface{}) (alerts []models.Alert, err 
 	return
 }
 
+func (re *RethinkDB) FindFlappingAlerts()([]models.Alert, error) {
+	flappingAlerts := map[string]interface{}{
+		"severity": "flapping",
+	}
+	return re.findAlerts(flappingAlerts)
+}
+
 func (re *RethinkDB) FindAlerts(queryArgs *fasthttp.Args) (alerts []models.Alert, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 	return re.findAlerts(filter)
@@ -303,6 +310,29 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 		)),
 	}
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
+	return
+}
+
+func (re *RethinkDB) UpdateFlappingAlert(alert models.Alert, isFlapping bool) (err error) {
+	alertUpdate := map[string]interface{}{
+		"flapScore":           alert.FlapScore,
+		"severityChangeTimes": alert.SeverityChangeTimes,
+	}
+
+	if !isFlapping {
+		alertUpdate["severity"] = alert.FlapSeverityState
+		alertUpdate["flapSeverityState"] = ""
+		alertUpdate["history"] = r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(r.Object(
+			"id", alert.Id,
+			"severity", alert.FlapSeverityState,
+			"event", alert.Event,
+			"value", alert.Value,
+			"type", "continuous flap check update",
+			"updateTime", time.Now(),
+		))
+	}
+
+	err = re.UpdateAlert(alert.Id, alertUpdate)
 	return
 }
 
