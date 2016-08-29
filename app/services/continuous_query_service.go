@@ -17,7 +17,7 @@ type ContinuousQueryService struct {
 }
 
 func (cqs *ContinuousQueryService) Start() {
-	go cqs.notifyPluginsOfOpenAlertsWithAlertableSeverity()
+	go cqs.processStreamingAlertChanges()
 
 	queryTicker := time.NewTicker(cqs.QueryInterval)
 	defer queryTicker.Stop()
@@ -55,14 +55,28 @@ func (cqs *ContinuousQueryService) escalateTimedOutAlerts() {
 	}
 }
 
-func (cqs *ContinuousQueryService) notifyPluginsOfOpenAlertsWithAlertableSeverity() {
+func (cqs *ContinuousQueryService) processStreamingAlertChanges() {
 	alertsChannel := make(chan models.AlertChangeFeed)
 
-	cqs.DB.StreamAlertChanges(alertsChannel)
+	err := cqs.DB.StreamAlertChanges(alertsChannel)
+	if err != nil {
+		close(alertsChannel)
+	}
+
+	CHANGE_FEED_LOOP:
 	for {
 		select {
-		case alertChangeFeed := <-alertsChannel:
-			cqs.Notifiers.ProcessAlertChangeFeed(alertChangeFeed)
+		case alertChangeFeed, ok := <-alertsChannel:
+			if !ok {
+				log.Println("Alerts change feed closed.")
+				break CHANGE_FEED_LOOP
+			}
+			//Send alerts to notifier plugins
+			go cqs.Notifiers.ProcessAlertChangeFeed(alertChangeFeed)
 		}
 	}
+
+	log.Println("Processing alert change feed failed. Trying again in 10 seconds...")
+	time.Sleep(time.Second * 10)
+	go cqs.processStreamingAlertChanges()
 }
