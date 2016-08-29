@@ -198,6 +198,9 @@ func (re *RethinkDB) GetAlertsSummary(queryArgs *fasthttp.Args) (alertsSummary [
 	}
 	defer res.Close()
 	err = res.All(&alertsSummary)
+	if alertsSummary == nil {
+		alertsSummary = make([]map[string]interface{}, 0)
+	}
 	return
 }
 
