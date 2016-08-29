@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/allen13/golerta",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Deps": [
 		{
@@ -101,7 +101,7 @@
 		},
 		{
 			"ImportPath": "github.com/iris-contrib/middleware/jwt",
-			"Rev": "ecfcad314b307f540d3137aaf979fef4c23e06ed"
+			"Rev": "c02acecac4079532e75b9b5e43c04d3a7f779512"
 		},
 		{
 			"ImportPath": "github.com/iris-contrib/response/data",
@@ -138,23 +138,23 @@
 		},
 		{
 			"ImportPath": "github.com/kataras/iris",
-			"Comment": "v4-3-gaa26a89",
-			"Rev": "aa26a89533414f1dcf7c612b40eab4538a04f909"
+			"Comment": "v4",
+			"Rev": "12cae9be3e90bed092bad660ca32a4b946cdb2c2"
 		},
 		{
 			"ImportPath": "github.com/kataras/iris/config",
-			"Comment": "v4-3-gaa26a89",
-			"Rev": "aa26a89533414f1dcf7c612b40eab4538a04f909"
+			"Comment": "v4",
+			"Rev": "12cae9be3e90bed092bad660ca32a4b946cdb2c2"
 		},
 		{
 			"ImportPath": "github.com/kataras/iris/context",
-			"Comment": "v4-3-gaa26a89",
-			"Rev": "aa26a89533414f1dcf7c612b40eab4538a04f909"
+			"Comment": "v4",
+			"Rev": "12cae9be3e90bed092bad660ca32a4b946cdb2c2"
 		},
 		{
 			"ImportPath": "github.com/kataras/iris/utils",
-			"Comment": "v4-3-gaa26a89",
-			"Rev": "aa26a89533414f1dcf7c612b40eab4538a04f909"
+			"Comment": "v4",
+			"Rev": "12cae9be3e90bed092bad660ca32a4b946cdb2c2"
 		},
 		{
 			"ImportPath": "github.com/klauspost/compress/flate",
@@ -217,13 +217,13 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.1.3-19-gd77da35",
-			"Rev": "d77da356e56a7428ad25149ca77381849a6a5232"
+			"Comment": "v1.1.3-4-g1f4a164",
+			"Rev": "1f4a1643a57e798696635ea4c126e9127adb7d3c"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/require",
-			"Comment": "v1.1.3-19-gd77da35",
-			"Rev": "d77da356e56a7428ad25149ca77381849a6a5232"
+			"Comment": "v1.1.3-4-g1f4a164",
+			"Rev": "1f4a1643a57e798696635ea4c126e9127adb7d3c"
 		},
 		{
 			"ImportPath": "github.com/twinj/uuid",
@@ -275,15 +275,15 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/html",
-			"Rev": "4d38db76854b199960801a1734443fd02870d7e1"
+			"Rev": "6acef71eb69611914f7a30939ea9f6e194c78172"
 		},
 		{
 			"ImportPath": "golang.org/x/net/html/atom",
-			"Rev": "4d38db76854b199960801a1734443fd02870d7e1"
+			"Rev": "6acef71eb69611914f7a30939ea9f6e194c78172"
 		},
 		{
 			"ImportPath": "golang.org/x/net/publicsuffix",
-			"Rev": "4d38db76854b199960801a1734443fd02870d7e1"
+			"Rev": "6acef71eb69611914f7a30939ea9f6e194c78172"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",

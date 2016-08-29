@@ -9,6 +9,7 @@ import (
 	"github.com/kataras/iris"
 	"log"
 	"github.com/allen13/golerta/app/config"
+	"github.com/kataras/iris/utils"
 )
 
 func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
@@ -45,12 +46,30 @@ func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	}
 	alertsController.Init()
 
-	http.StaticWeb("/static", "./static", 1)
+	StaticWeb(http, "/static", "./static", 1)
 	http.Get("/", func(ctx *iris.Context) {
 		ctx.Redirect("/static/index.html", 301)
 	})
 
 	return
+}
+
+func StaticWeb(http *iris.Framework, reqPath string, systemPath string, stripSlashes int) {
+	if reqPath[len(reqPath)-1] != byte('/') { // if / then /*filepath, if /something then /something/*filepath
+		reqPath += "/"
+	}
+
+	hasIndex := utils.Exists(systemPath + utils.PathSeparator + "index.html")
+	serveHandler := http.StaticHandler(systemPath, stripSlashes, false, !hasIndex, nil) // if not index.html exists then generate index.html which shows the list of files
+	indexHandler := func(ctx *iris.Context) {
+		if len(ctx.Param("filepath")) < 2 && hasIndex {
+			ctx.Request.SetRequestURI(reqPath + "index.html")
+		}
+		ctx.Next()
+
+	}
+	http.Head(reqPath+"*filepath", indexHandler, serveHandler)
+	http.Get(reqPath+"*filepath", indexHandler, serveHandler)
 }
 
 func BuildAuthProvider(config config.GolertaConfig, http *iris.Framework) {
