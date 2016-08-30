@@ -13,6 +13,10 @@ var QUERY_PARAMS []string = []string{
 }
 
 func BuildAlertsFilter(queryArgs *fasthttp.Args) (rowFilter r.Term) {
+	if queryArgs.Len() < 1 {
+		return r.Row
+	}
+
 	var firstParam = true
 	for _, queryParam := range QUERY_PARAMS {
 		if !queryArgs.Has(queryParam){
