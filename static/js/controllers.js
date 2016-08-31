@@ -345,7 +345,6 @@ alertaControllers.controller('ChangeStatusController', function ($scope, $uibMod
   $scope.duration = {days: 0, hours: 1, minutes: 0};
 
   $scope.changeAlertStatus = function () {
-    console.log($scope.status);
     var response = {status: $scope.status, text: $scope.comments};
 
     if($scope.status == 'ack'){
