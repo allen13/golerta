@@ -36,6 +36,7 @@ func main() {
 
 	if args["server"].(bool) {
 		echo := app.BuildApp(config)
+		log.Println("Starting golerta server on port 5608...")
 		echo.Run(fasthttp.New(":5608"))
 	}
 
