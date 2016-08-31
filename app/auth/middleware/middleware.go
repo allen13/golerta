@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -105,14 +104,11 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 			}
-			token, err := jwt.ParseWithClaims(auth, config.Claims, func(t *jwt.Token) (interface{}, error) {
-				// Check the signing method
-				if t.Method.Alg() != config.SigningMethod {
-					return nil, fmt.Errorf("unexpected jwt signing method=%v", t.Header["alg"])
-				}
-				return config.SigningKey, nil
 
+			token, err := jwt.Parse(auth, func(t *jwt.Token) (interface{}, error) {
+				return config.SigningKey, nil
 			})
+
 			if err == nil && token.Valid {
 				// Store user information from token into context.
 				c.Set(config.ContextKey, token)
@@ -138,6 +134,9 @@ func buildExtractor(tokenLookups string) jwtExtractor {
 		case "cookie":
 			extractors = append(extractors, jwtFromCookie(parts[1]))
 		}
+	}
+	if len(extractors) == 1 {
+		return extractors[0]
 	}
 
 	return jwtFromExtractors(extractors)
