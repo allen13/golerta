@@ -1,12 +1,8 @@
 package auth
 
-import (
-	"github.com/kataras/iris"
-)
-
 //Interface for authentication providers
 type AuthProvider interface {
-	LoginHandler(ctx *iris.Context)
+	Authenticate(username, password string) (authenticated bool, token string, err error)
 	SetSigningKey(key string)
 	Connect() error
 	Close()

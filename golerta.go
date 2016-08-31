@@ -1,12 +1,14 @@
 package main
 
 import (
-	"github.com/allen13/golerta/app"
-	"github.com/docopt/docopt-go"
-	"log"
 	"fmt"
+	"github.com/allen13/golerta/app"
 	"github.com/allen13/golerta/app/auth/token"
 	"github.com/allen13/golerta/app/config"
+	"github.com/docopt/docopt-go"
+	"log"
+
+	"github.com/labstack/echo/engine/fasthttp"
 )
 
 const version = "Golerta 0.0.1"
@@ -32,12 +34,12 @@ func main() {
 	configFile := args["--config"].(string)
 	config := config.BuildConfig(configFile)
 
-	if args["server"].(bool){
-		http := app.BuildApp(config)
-		http.Listen(":5608")
+	if args["server"].(bool) {
+		echo := app.BuildApp(config)
+		echo.Run(fasthttp.New(":5608"))
 	}
 
-	if args["createAgentToken"].(bool){
+	if args["createAgentToken"].(bool) {
 		fmt.Println(token.CreateExpirationFreeAgentToken(args["<name>"].(string), config.Golerta.SigningKey))
 	}
 }

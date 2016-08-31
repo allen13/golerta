@@ -1,10 +1,10 @@
 package services
 
 import (
+	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/models"
 	"testing"
-	"github.com/allen13/golerta/app/algorithms"
 )
 
 func TestAlertService_ProcessAlert(t *testing.T) {

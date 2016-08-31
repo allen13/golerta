@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net"
 	"os"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -215,15 +216,15 @@ type Server struct {
 	//
 	// The server rejects requests with bodies exceeding this limit.
 	//
-	// Request body size is limited by DefaultMaxRequestBodySize by default.
+	// By default request body size is unlimited.
 	MaxRequestBodySize int
 
 	// Aggressively reduces memory usage at the cost of higher CPU usage
 	// if set to true.
 	//
 	// Try enabling this option only if the server consumes too much memory
-	// serving mostly idle keep-alive connections. This may reduce memory
-	// usage by more than 50%.
+	// serving mostly idle keep-alive connections (more than 1M concurrent
+	// connections). This may reduce memory usage by up to 50%.
 	//
 	// Aggressive memory usage reduction is disabled by default.
 	ReduceMemoryUsage bool
@@ -478,17 +479,6 @@ func (ctx *RequestCtx) UserValue(key string) interface{} {
 // under the given key.
 func (ctx *RequestCtx) UserValueBytes(key []byte) interface{} {
 	return ctx.userValues.GetBytes(key)
-}
-
-// VisitUserValues calls visitor for each existing userValue.
-//
-// visitor must not retain references to key and value after returning.
-// Make key and/or value copies if you need storing them after returning.
-func (ctx *RequestCtx) VisitUserValues(visitor func([]byte, interface{})) {
-	for i, n := 0, len(ctx.userValues); i < n; i++ {
-		kv := &ctx.userValues[i]
-		visitor(kv.key, kv.value)
-	}
 }
 
 // IsTLS returns true if the underlying connection is tls.Conn.
@@ -1399,22 +1389,12 @@ func nextConnID() uint64 {
 	return atomic.AddUint64(&globalConnID, 1)
 }
 
-// DefaultMaxRequestBodySize is the maximum request body size the server
-// reads by default.
-//
-// See Server.MaxRequestBodySize for details.
-const DefaultMaxRequestBodySize = 4 * 1024 * 1024
-
 func (s *Server) serveConn(c net.Conn) error {
 	serverName := s.getServerName()
 	connRequestNum := uint64(0)
 	connID := nextConnID()
 	currentTime := time.Now()
 	connTime := currentTime
-	maxRequestBodySize := s.MaxRequestBodySize
-	if maxRequestBodySize <= 0 {
-		maxRequestBodySize = DefaultMaxRequestBodySize
-	}
 
 	ctx := s.acquireCtx(c)
 	ctx.connTime = connTime
@@ -1457,7 +1437,7 @@ func (s *Server) serveConn(c net.Conn) error {
 				ctx.Request.Header.DisableNormalizing()
 				ctx.Response.Header.DisableNormalizing()
 			}
-			err = ctx.Request.readLimitBody(br, maxRequestBodySize, s.GetOnly)
+			err = ctx.Request.readLimitBody(br, s.MaxRequestBodySize, s.GetOnly)
 			if br.Buffered() == 0 || err != nil {
 				releaseReader(s, br)
 				br = nil
@@ -1493,7 +1473,7 @@ func (s *Server) serveConn(c net.Conn) error {
 			if br == nil {
 				br = acquireReader(ctx)
 			}
-			err = ctx.Request.ContinueReadBody(br, maxRequestBodySize)
+			err = ctx.Request.ContinueReadBody(br, s.MaxRequestBodySize)
 			if br.Buffered() == 0 || err != nil {
 				releaseReader(s, br)
 				br = nil
@@ -1670,13 +1650,20 @@ func (s *Server) updateWriteDeadline(c net.Conn, ctx *RequestCtx, lastDeadlineTi
 
 func hijackConnHandler(r io.Reader, c net.Conn, s *Server, h HijackHandler) {
 	hjc := s.acquireHijackConn(r, c)
-	h(hjc)
 
-	if br, ok := r.(*bufio.Reader); ok {
-		releaseReader(s, br)
-	}
-	c.Close()
-	s.releaseHijackConn(hjc)
+	defer func() {
+		if r := recover(); r != nil {
+			s.logger().Printf("panic on hijacked conn: %s\nStack trace:\n%s", r, debug.Stack())
+		}
+
+		if br, ok := r.(*bufio.Reader); ok {
+			releaseReader(s, br)
+		}
+		c.Close()
+		s.releaseHijackConn(hjc)
+	}()
+
+	h(hjc)
 }
 
 func (s *Server) acquireHijackConn(r io.Reader, c net.Conn) *hijackConn {
@@ -1816,15 +1803,11 @@ func (s *Server) acquireCtx(c net.Conn) *RequestCtx {
 	v := s.ctxPool.Get()
 	var ctx *RequestCtx
 	if v == nil {
-		ctx = &RequestCtx{
+		v = &RequestCtx{
 			s: s,
 		}
-		keepBodyBuffer := !s.ReduceMemoryUsage
-		ctx.Request.keepBodyBuffer = keepBodyBuffer
-		ctx.Response.keepBodyBuffer = keepBodyBuffer
-	} else {
-		ctx = v.(*RequestCtx)
 	}
+	ctx = v.(*RequestCtx)
 	ctx.c = c
 	return ctx
 }

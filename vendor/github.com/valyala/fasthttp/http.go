@@ -9,8 +9,6 @@ import (
 	"mime/multipart"
 	"os"
 	"sync"
-
-	"github.com/valyala/bytebufferpool"
 )
 
 // Request represents HTTP request.
@@ -32,7 +30,7 @@ type Request struct {
 
 	bodyStream io.Reader
 	w          requestBodyWriter
-	body       *bytebufferpool.ByteBuffer
+	body       *ByteBuffer
 
 	multipartForm         *multipart.Form
 	multipartFormBoundary string
@@ -40,8 +38,6 @@ type Request struct {
 	// Group bool members in order to reduce Request object size.
 	parsedURI      bool
 	parsedPostArgs bool
-
-	keepBodyBuffer bool
 }
 
 // Response represents HTTP response.
@@ -60,7 +56,7 @@ type Response struct {
 
 	bodyStream io.Reader
 	w          responseBodyWriter
-	body       *bytebufferpool.ByteBuffer
+	body       *ByteBuffer
 
 	// Response.Read() skips reading body if set to true.
 	// Use it for reading HEAD responses.
@@ -69,6 +65,8 @@ type Response struct {
 	// Use it for writing HEAD responses.
 	SkipBody bool
 
+	// This is a hackish field for client implementation, which allows
+	// avoiding body copying.
 	keepBodyBuffer bool
 }
 
@@ -304,23 +302,23 @@ func (req *Request) bodyBytes() []byte {
 	return req.body.B
 }
 
-func (resp *Response) bodyBuffer() *bytebufferpool.ByteBuffer {
+func (resp *Response) bodyBuffer() *ByteBuffer {
 	if resp.body == nil {
-		resp.body = responseBodyPool.Get()
+		resp.body = responseBodyPool.Acquire()
 	}
 	return resp.body
 }
 
-func (req *Request) bodyBuffer() *bytebufferpool.ByteBuffer {
+func (req *Request) bodyBuffer() *ByteBuffer {
 	if req.body == nil {
-		req.body = requestBodyPool.Get()
+		req.body = requestBodyPool.Acquire()
 	}
 	return req.body
 }
 
 var (
-	responseBodyPool bytebufferpool.Pool
-	requestBodyPool  bytebufferpool.Pool
+	requestBodyPool  byteBufferPool
+	responseBodyPool byteBufferPool
 )
 
 // BodyGunzip returns un-gzipped body data.
@@ -437,7 +435,7 @@ func (resp *Response) ResetBody() {
 		if resp.keepBodyBuffer {
 			resp.body.Reset()
 		} else {
-			responseBodyPool.Put(resp.body)
+			responseBodyPool.Release(resp.body)
 			resp.body = nil
 		}
 	}
@@ -447,9 +445,6 @@ func (resp *Response) ResetBody() {
 //
 // This permits GC to reclaim the large buffer.  If used, must be before
 // ReleaseResponse.
-//
-// Use this method only if you really understand how it works.
-// The majority of workloads don't need this method.
 func (resp *Response) ReleaseBody(size int) {
 	if cap(resp.body.B) > size {
 		resp.closeBodyStream()
@@ -461,9 +456,6 @@ func (resp *Response) ReleaseBody(size int) {
 //
 // This permits GC to reclaim the large buffer.  If used, must be before
 // ReleaseRequest.
-//
-// Use this method only if you really understand how it works.
-// The majority of workloads don't need this method.
 func (req *Request) ReleaseBody(size int) {
 	if cap(req.body.B) > size {
 		req.closeBodyStream()
@@ -524,12 +516,8 @@ func (req *Request) ResetBody() {
 	req.RemoveMultipartFormFiles()
 	req.closeBodyStream()
 	if req.body != nil {
-		if req.keepBodyBuffer {
-			req.body.Reset()
-		} else {
-			requestBodyPool.Put(req.body)
-			req.body = nil
-		}
+		requestBodyPool.Release(req.body)
+		req.body = nil
 	}
 }
 
@@ -1141,7 +1129,7 @@ func (resp *Response) gzipBody(level int) error {
 			}
 		})
 	} else {
-		w := responseBodyPool.Get()
+		w := responseBodyPool.Acquire()
 		zw := acquireGzipWriter(w, level)
 		_, err := zw.Write(resp.bodyBytes())
 		releaseGzipWriter(zw)
@@ -1150,7 +1138,7 @@ func (resp *Response) gzipBody(level int) error {
 		}
 
 		// Hack: swap resp.body with w.
-		responseBodyPool.Put(resp.body)
+		responseBodyPool.Release(resp.body)
 		resp.body = w
 	}
 	resp.Header.SetCanonical(strContentEncoding, strGzip)
@@ -1171,7 +1159,7 @@ func (resp *Response) deflateBody(level int) error {
 			}
 		})
 	} else {
-		w := responseBodyPool.Get()
+		w := responseBodyPool.Acquire()
 		zw := acquireFlateWriter(w, level)
 		_, err := zw.Write(resp.bodyBytes())
 		releaseFlateWriter(zw)
@@ -1180,7 +1168,7 @@ func (resp *Response) deflateBody(level int) error {
 		}
 
 		// Hack: swap resp.body with w.
-		responseBodyPool.Put(resp.body)
+		responseBodyPool.Release(resp.body)
 		resp.body = w
 	}
 	resp.Header.SetCanonical(strContentEncoding, strDeflate)

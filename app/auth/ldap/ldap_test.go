@@ -17,7 +17,7 @@ func TestLDAPAuthProvider_Authenticate(t *testing.T) {
 	ldapAuthProvider.Connect()
 	defer ldapAuthProvider.Close()
 
-	authenticated, err := ldapAuthProvider.Authenticate("gauss", "password")
+	authenticated, _, err := ldapAuthProvider.Authenticate("gauss", "password")
 	if err != nil || !authenticated {
 		t.Errorf("LDAP auth provider failed")
 	}

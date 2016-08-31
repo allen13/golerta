@@ -27,10 +27,10 @@ func (ns *Notifiers) Init() {
 		ns.TriggerSeverities = []string{"critical"}
 	}
 
-	uninitializedNotifiers := []Notifier{&ns.File,&ns.PagerDuty}
+	uninitializedNotifiers := []Notifier{&ns.File, &ns.PagerDuty}
 
 	for _, notifier := range uninitializedNotifiers {
-		if notifier.Enabled(){
+		if notifier.Enabled() {
 			err := notifier.Init()
 			if err != nil {
 				log.Println(err)

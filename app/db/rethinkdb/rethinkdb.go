@@ -2,7 +2,6 @@ package rethinkdb
 
 import (
 	"github.com/allen13/golerta/app/models"
-	"github.com/valyala/fasthttp"
 	r "gopkg.in/dancannon/gorethink.v2"
 	"time"
 )
@@ -175,20 +174,20 @@ func (re *RethinkDB) findAlerts(filter interface{}) (alerts []models.Alert, err 
 	return
 }
 
-func (re *RethinkDB) FindFlappingAlerts()([]models.Alert, error) {
+func (re *RethinkDB) FindFlappingAlerts() ([]models.Alert, error) {
 	flappingAlerts := map[string]interface{}{
 		"severity": "flapping",
 	}
 	return re.findAlerts(flappingAlerts)
 }
 
-func (re *RethinkDB) FindAlerts(queryArgs *fasthttp.Args) (alerts []models.Alert, err error) {
+func (re *RethinkDB) FindAlerts(queryArgs map[string][]string) (alerts []models.Alert, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 	return re.findAlerts(filter)
 }
 
 //A filtered list of alerts without unecessary details
-func (re *RethinkDB) GetAlertsSummary(queryArgs *fasthttp.Args) (alertsSummary []map[string]interface{}, err error) {
+func (re *RethinkDB) GetAlertsSummary(queryArgs map[string][]string) (alertsSummary []map[string]interface{}, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 	res, err := r.DB(re.Database).Table("alerts").Filter(filter).WithFields(
 		"id",
@@ -336,7 +335,7 @@ func (re *RethinkDB) UpdateFlappingAlert(alert models.Alert, isFlapping bool) (e
 	return
 }
 
-func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(queryArgs *fasthttp.Args) (groupedServices []models.GroupedService, err error) {
+func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(queryArgs map[string][]string) (groupedServices []models.GroupedService, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 
 	//This query unwinds the service field which duplicates the alert per service. It then groups by both environment and service.
@@ -367,7 +366,7 @@ func (re *RethinkDB) GetAlertServicesGroupedByEnvironment(queryArgs *fasthttp.Ar
 	return
 }
 
-func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(queryArgs *fasthttp.Args) (groupedEnvironments []models.GroupedEnvironment, err error) {
+func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(queryArgs map[string][]string) (groupedEnvironments []models.GroupedEnvironment, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group("environment").Count().Ungroup().Map(func(result r.Term) r.Term {
 		return r.Object(
@@ -387,7 +386,7 @@ func (re *RethinkDB) GetAlertEnvironmentsGroupedByEnvironment(queryArgs *fasthtt
 	return
 }
 
-func (re *RethinkDB) CountAlertsGroup(group string, queryArgs *fasthttp.Args) (alertCountGroup map[string]int, err error) {
+func (re *RethinkDB) CountAlertsGroup(group string, queryArgs map[string][]string) (alertCountGroup map[string]int, err error) {
 	filter := BuildAlertsFilter(queryArgs)
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group(group).Count().Ungroup().Map(
 		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term) r.Term {

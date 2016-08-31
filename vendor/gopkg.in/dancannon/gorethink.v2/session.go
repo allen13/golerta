@@ -99,7 +99,7 @@ type ConnectOpts struct {
 	MaxIdle int `gorethink:"max_idle,omitempty"`
 }
 
-func (o *ConnectOpts) toMap() map[string]interface{} {
+func (o ConnectOpts) toMap() map[string]interface{} {
 	return optArgsToMap(o)
 }
 
@@ -159,7 +159,7 @@ type CloseOpts struct {
 	NoReplyWait bool `gorethink:"noreplyWait,omitempty"`
 }
 
-func (o *CloseOpts) toMap() map[string]interface{} {
+func (o CloseOpts) toMap() map[string]interface{} {
 	return optArgsToMap(o)
 }
 
@@ -220,13 +220,13 @@ func (s *Session) Close(optArgs ...CloseOpts) error {
 	return nil
 }
 
-// SetInitalPoolCap sets the initial capacity of the connection pool.
-func (s *Session) SetInitalPoolCap(n int) {
+// SetInitialPoolCap sets the initial capacity of the connection pool.
+func (s *Session) SetInitialPoolCap(n int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.opts.InitialCap = n
-	s.cluster.SetInitalPoolCap(n)
+	s.cluster.SetInitialPoolCap(n)
 }
 
 // SetMaxIdleConns sets the maximum number of connections in the idle

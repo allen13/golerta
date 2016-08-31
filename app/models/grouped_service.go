@@ -6,10 +6,10 @@ type GroupedService struct {
 	Count       int    `gorethink:"count" json:"count"`
 }
 
-type GroupedServiceResponse struct{
-	Status         string    `json:"status"`
-	Total          int       `json:"total"`
-	Services   []GroupedService `json:"services"`
+type GroupedServiceResponse struct {
+	Status   string           `json:"status"`
+	Total    int              `json:"total"`
+	Services []GroupedService `json:"services"`
 }
 
 func NewGroupedServiceResponse(groupedServices []GroupedService) (g GroupedServiceResponse) {

@@ -15,7 +15,7 @@ func CreateToken(signingKey string, claims jwt.MapClaims) (string, error) {
 	return ss, nil
 }
 
-func CreateExpirationFreeAgentToken(name , signingKey string)(string){
+func CreateExpirationFreeAgentToken(name, signingKey string) string {
 	claims := jwt.MapClaims{
 		"iss": "golerta-token-tool",
 		"iat": time.Now().Unix(),

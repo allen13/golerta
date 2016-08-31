@@ -4,11 +4,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/allen13/golerta/app/auth/token"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kataras/iris"
 	"gopkg.in/ldap.v2"
 	"time"
-	"github.com/allen13/golerta/app/auth/token"
 )
 
 type LDAPAuthProvider struct {
@@ -24,50 +23,12 @@ type LDAPAuthProvider struct {
 	Attributes   []string `toml:"attributes"`
 }
 
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-//JSON struct that holds generated authorization token
-type AuthToken struct {
-	Token string `json:"token"`
-}
-
-//JSON struct for login errors
-type LoginError struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
-// Handles login request
-func (lc *LDAPAuthProvider) LoginHandler(ctx *iris.Context) {
-	loginRequest := LoginRequest{}
-	err := ctx.ReadJSON(&loginRequest)
-
-	if err != nil || loginRequest.Username == "" || loginRequest.Password == "" {
-		ctx.JSON(iris.StatusUnauthorized, LoginError{"error", "Invalid login request"})
-		return
-	}
-
-	loginSuccess, err := lc.Authenticate(loginRequest.Username, loginRequest.Password)
-
-	if err != nil || !loginSuccess {
-		ctx.JSON(iris.StatusUnauthorized, LoginError{"error", "Login failed"})
-		return
-	}
-
-	token, _ := lc.createToken(loginRequest.Username)
-	authToken := AuthToken{token}
-	ctx.JSON(iris.StatusOK, authToken)
-}
-
 func (lc *LDAPAuthProvider) createToken(username string) (string, error) {
 	expirationTimestamp := time.Now().Add(time.Hour * 48).Unix()
 	claims := jwt.MapClaims{
-		"jti": username,
-		"iss": "ldap",
-		"exp": expirationTimestamp,
+		"jti":  username,
+		"iss":  "ldap",
+		"exp":  expirationTimestamp,
 		"name": username,
 		//Everyone who logs in is an admin by default for now. Could check ldap groups for this.
 		"role": "admin",
@@ -118,19 +79,19 @@ func (lc *LDAPAuthProvider) Close() {
 }
 
 // Authenticate authenticates the user against the ldap backend
-func (lc *LDAPAuthProvider) Authenticate(username, password string) (bool, error) {
-	err := lc.Connect()
+func (lc *LDAPAuthProvider) Authenticate(username, password string) (authenticated bool, token string, err error) {
+	err = lc.Connect()
 	defer lc.Close()
 
 	if err != nil {
-		return false, err
+		return
 	}
 
 	// First bind with a read only user
 	if lc.BindDN != "" && lc.BindPassword != "" {
-		err := lc.conn.Bind(lc.BindDN, lc.BindPassword)
+		err = lc.conn.Bind(lc.BindDN, lc.BindPassword)
 		if err != nil {
-			return false, err
+			return
 		}
 	}
 
@@ -146,15 +107,17 @@ func (lc *LDAPAuthProvider) Authenticate(username, password string) (bool, error
 
 	sr, err := lc.conn.Search(searchRequest)
 	if err != nil {
-		return false, err
+		return
 	}
 
 	if len(sr.Entries) < 1 {
-		return false, errors.New("User does not exist")
+		err = errors.New("User does not exist")
+		return
 	}
 
 	if len(sr.Entries) > 1 {
-		return false, errors.New("Too many entries returned")
+		err = errors.New("Too many entries returned")
+		return
 	}
 
 	userDN := sr.Entries[0].DN
@@ -166,16 +129,24 @@ func (lc *LDAPAuthProvider) Authenticate(username, password string) (bool, error
 	// Bind as the user to verify their password
 	err = lc.conn.Bind(userDN, password)
 	if err != nil {
-		return false, err
+		return
 	}
+
+	token, err = lc.createToken(username)
+	if err != nil {
+		return
+	}
+
+	//We authenticated and we have our token
+	authenticated = true
 
 	// Rebind as the read only user for any further queries
 	if lc.BindDN != "" && lc.BindPassword != "" {
 		err = lc.conn.Bind(lc.BindDN, lc.BindPassword)
 		if err != nil {
-			return true, err
+			return
 		}
 	}
 
-	return true, nil
+	return
 }

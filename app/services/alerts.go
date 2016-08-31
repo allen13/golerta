@@ -4,7 +4,6 @@ import (
 	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/models"
-	"github.com/valyala/fasthttp"
 	"log"
 )
 
@@ -94,8 +93,8 @@ func (as *AlertService) GetAlert(id string) (alertResponse models.AlertResponse,
 	return
 }
 
-func (as *AlertService) GetAlerts(queryArgs *fasthttp.Args) (alertsResponse models.AlertsResponse, err error) {
-	alerts, err := as.DB.GetAlertsSummary(queryArgs)
+func (as *AlertService) GetAlerts(queryParams map[string][]string) (alertsResponse models.AlertsResponse, err error) {
+	alerts, err := as.DB.GetAlertsSummary(queryParams)
 	if err != nil {
 		return
 	}
@@ -109,12 +108,12 @@ func (as *AlertService) DeleteAlert(id string) (err error) {
 	return
 }
 
-func (as *AlertService) GetAlertsCount(queryArgs *fasthttp.Args) (models.AlertsCountResponse, error) {
-	severityCounts, err := as.DB.CountAlertsGroup("severity", queryArgs)
+func (as *AlertService) GetAlertsCount(queryParams map[string][]string) (models.AlertsCountResponse, error) {
+	severityCounts, err := as.DB.CountAlertsGroup("severity", queryParams)
 	if err != nil {
 		return models.AlertsCountResponse{}, err
 	}
-	statusCounts, err := as.DB.CountAlertsGroup("status", queryArgs)
+	statusCounts, err := as.DB.CountAlertsGroup("status", queryParams)
 	if err != nil {
 		return models.AlertsCountResponse{}, err
 	}
@@ -122,8 +121,8 @@ func (as *AlertService) GetAlertsCount(queryArgs *fasthttp.Args) (models.AlertsC
 	return models.NewAlertsCountResponse(statusCounts, severityCounts), nil
 }
 
-func (as *AlertService) GetGroupedServices(queryArgs *fasthttp.Args) (models.GroupedServiceResponse, error) {
-	groupedServices, err := as.DB.GetAlertServicesGroupedByEnvironment(queryArgs)
+func (as *AlertService) GetGroupedServices(queryParams map[string][]string) (models.GroupedServiceResponse, error) {
+	groupedServices, err := as.DB.GetAlertServicesGroupedByEnvironment(queryParams)
 	if err != nil {
 		return models.GroupedServiceResponse{}, err
 	}
@@ -131,8 +130,8 @@ func (as *AlertService) GetGroupedServices(queryArgs *fasthttp.Args) (models.Gro
 	return models.NewGroupedServiceResponse(groupedServices), nil
 }
 
-func (as *AlertService) GetGroupedEnvironments(queryArgs *fasthttp.Args) (models.GroupedEnvironmentResponse, error) {
-	groupedEnvironments, err := as.DB.GetAlertEnvironmentsGroupedByEnvironment(queryArgs)
+func (as *AlertService) GetGroupedEnvironments(queryParams map[string][]string) (models.GroupedEnvironmentResponse, error) {
+	groupedEnvironments, err := as.DB.GetAlertEnvironmentsGroupedByEnvironment(queryParams)
 	if err != nil {
 		return models.GroupedEnvironmentResponse{}, err
 	}

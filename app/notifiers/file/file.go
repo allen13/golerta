@@ -8,13 +8,13 @@ import (
 )
 
 type File struct {
-	Files   []string `toml:"file"`
-	EnabledField bool `toml:"enabled"`
-	writer  io.Writer
-	closers []io.Closer
+	Files        []string `toml:"file"`
+	EnabledField bool     `toml:"enabled"`
+	writer       io.Writer
+	closers      []io.Closer
 }
 
-func (f *File) Enabled() bool{
+func (f *File) Enabled() bool {
 	return f.EnabledField
 }
 

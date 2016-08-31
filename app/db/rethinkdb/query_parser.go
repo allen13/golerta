@@ -1,34 +1,34 @@
 package rethinkdb
 
 import (
-	"github.com/valyala/fasthttp"
 	r "gopkg.in/dancannon/gorethink.v2"
 )
 
-var QUERY_PARAMS []string = []string{
+var ALLOWED_QUERY_PARAMS []string = []string{
 	"id",
 	"status",
 	"environment",
 	"service",
 }
 
-func BuildAlertsFilter(queryArgs *fasthttp.Args) (rowFilter r.Term) {
-	if queryArgs.Len() < 1 {
+func BuildAlertsFilter(queryParams map[string][]string) (rowFilter r.Term) {
+	if len(queryParams) < 1 {
 		return r.Row
 	}
 
 	var firstParam = true
-	for _, queryParam := range QUERY_PARAMS {
-		if !queryArgs.Has(queryParam){
+	for _, allowedQueryParam := range ALLOWED_QUERY_PARAMS {
+		_, hasParam := queryParams[allowedQueryParam]
+		if !hasParam {
 			continue
 		}
 
-		paramFilter := buildQueryForParam(queryParam, queryArgs)
+		paramFilter := buildQueryForParam(allowedQueryParam, queryParams)
 
 		if firstParam {
 			rowFilter = paramFilter
 			firstParam = false
-		}else {
+		} else {
 			rowFilter = rowFilter.And(paramFilter)
 		}
 	}
@@ -36,17 +36,17 @@ func BuildAlertsFilter(queryArgs *fasthttp.Args) (rowFilter r.Term) {
 	return rowFilter
 }
 
-func buildQueryForParam(queryParam string, queryArgs *fasthttp.Args)(r.Term){
+func buildQueryForParam(queryParam string, queryParamValues map[string][]string) r.Term {
 	paramFilter := r.Row
 
-	for i, queryValue := range getQueryValues(queryParam, queryArgs) {
-		if queryParam == "service"{
+	for i, queryValue := range queryParamValues[queryParam] {
+		if queryParam == "service" {
 			if i == 0 {
 				paramFilter = paramFilter.Field(queryParam).Contains(queryValue)
 			} else {
 				paramFilter = paramFilter.Or(r.Row.Field(queryParam).Contains(queryValue))
 			}
-		}else {
+		} else {
 			if i == 0 {
 				paramFilter = paramFilter.Field(queryParam).Eq(queryValue)
 			} else {
@@ -57,11 +57,4 @@ func buildQueryForParam(queryParam string, queryArgs *fasthttp.Args)(r.Term){
 	}
 
 	return paramFilter
-}
-
-func getQueryValues(key string, queryArgs *fasthttp.Args) (values []string) {
-	for _, value := range queryArgs.PeekMulti(key) {
-		values = append(values, string(value))
-	}
-	return
 }

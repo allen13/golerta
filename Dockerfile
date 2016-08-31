@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM alpine:edge
 
 ENV DOCKERIZE_VERSION 0.2.0
 RUN apk add --no-cache ca-certificates curl && \
@@ -16,10 +16,9 @@ RUN set -ex \
 	&& apk add --no-cache --virtual .build-deps \
 		git \
 		go \
-	&& go get github.com/tools/godep \
-	&& $GOPATH/bin/godep go build golerta.go \
+		build-base \
+	&& go build golerta.go \
 	&& apk del .build-deps \
-	&& rm $GOPATH/bin/godep \
 	&& rm -rf $GOPATH/pkg
 
 EXPOSE 5608

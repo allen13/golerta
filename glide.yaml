@@ -1,0 +1,19 @@
+package: github.com/allen13/golerta
+import:
+- package: github.com/BurntSushi/toml
+  version: ~0.2.0
+- package: github.com/PagerDuty/go-pagerduty
+- package: github.com/dgrijalva/jwt-go
+  version: ~3.0.0
+- package: github.com/docopt/docopt-go
+  version: ~0.6.2
+- package: github.com/labstack/echo
+  version: ~2.0.2
+  subpackages:
+  - engine/fasthttp
+- package: github.com/twinj/uuid
+  version: ~0.10.0
+- package: gopkg.in/dancannon/gorethink.v2
+  version: ~2.2.0
+- package: gopkg.in/ldap.v2
+  version: ~2.4.1

@@ -5,10 +5,10 @@ type GroupedEnvironment struct {
 	Count       int    `gorethink:"count" json:"count"`
 }
 
-type GroupedEnvironmentResponse struct{
-	Status         string    `json:"status"`
-	Total          int       `json:"total"`
-	Environments   []GroupedEnvironment `json:"environments"`
+type GroupedEnvironmentResponse struct {
+	Status       string               `json:"status"`
+	Total        int                  `json:"total"`
+	Environments []GroupedEnvironment `json:"environments"`
 }
 
 func NewGroupedEnvironmentResponse(groupedEnvironments []GroupedEnvironment) (g GroupedEnvironmentResponse) {

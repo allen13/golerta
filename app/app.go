@@ -2,17 +2,15 @@ package app
 
 import (
 	"github.com/allen13/golerta/app/auth"
+	"github.com/allen13/golerta/app/auth/middleware"
+	"github.com/allen13/golerta/app/config"
 	"github.com/allen13/golerta/app/controllers"
 	"github.com/allen13/golerta/app/services"
-	"github.com/dgrijalva/jwt-go"
-	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
-	"github.com/kataras/iris"
+	"github.com/labstack/echo"
 	"log"
-	"github.com/allen13/golerta/app/config"
-	"github.com/kataras/iris/utils"
 )
 
-func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
+func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 	config.Notifiers.Init()
 	config.FlapDetection.Init()
 
@@ -22,58 +20,47 @@ func BuildApp(config config.GolertaConfig) (http *iris.Framework) {
 	}
 	db := config.Rethinkdb
 
-	continuousQueryService :=	&services.ContinuousQueryService{
-		DB: db,
+	continuousQueryService := &services.ContinuousQueryService{
+		DB:            db,
 		QueryInterval: config.Golerta.ContinuousQueryInterval.Duration,
-		Notifiers: config.Notifiers,
+		Notifiers:     config.Notifiers,
 		FlapDetection: &config.FlapDetection,
 	}
 	go continuousQueryService.Start()
 
-	http = iris.New()
+	e = echo.New()
 
-	BuildAuthProvider(config, http)
-	authMiddleware := BuildAuthorizationMiddleware(config.Golerta.SigningKey)
+	authProvider := BuildAuthProvider(config)
+	authMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:  []byte(config.Golerta.SigningKey),
+		TokenLookup: "header:Authorization,query:api-key",
+	})
+	authController := controllers.AuthController{
+		Echo:         e,
+		AuthProvider: authProvider,
+	}
+	authController.Init()
 
 	alertsService := services.AlertService{
-		DB: &db,
+		DB:            &db,
 		FlapDetection: &config.FlapDetection,
 	}
 	alertsController := controllers.AlertsController{
-		HTTP:           http,
+		Echo:           e,
 		AlertService:   alertsService,
 		AuthMiddleware: authMiddleware,
 	}
 	alertsController.Init()
 
-	StaticWeb(http, "/static", "./static", 1)
-	http.Get("/", func(ctx *iris.Context) {
-		ctx.Redirect("/static/index.html", 301)
+	e.Static("/static", "static")
+	e.GET("/", func(ctx echo.Context) error {
+		return ctx.Redirect(301, "/static/index.html")
 	})
 
 	return
 }
 
-func StaticWeb(http *iris.Framework, reqPath string, systemPath string, stripSlashes int) {
-	if reqPath[len(reqPath)-1] != byte('/') { // if / then /*filepath, if /something then /something/*filepath
-		reqPath += "/"
-	}
-
-	hasIndex := utils.Exists(systemPath + utils.PathSeparator + "index.html")
-	serveHandler := http.StaticHandler(systemPath, stripSlashes, false, !hasIndex, nil) // if not index.html exists then generate index.html which shows the list of files
-	indexHandler := func(ctx *iris.Context) {
-		if len(ctx.Param("filepath")) < 2 && hasIndex {
-			ctx.Request.SetRequestURI(reqPath + "index.html")
-		}
-		ctx.Next()
-
-	}
-	http.Head(reqPath+"*filepath", indexHandler, serveHandler)
-	http.Get(reqPath+"*filepath", indexHandler, serveHandler)
-}
-
-func BuildAuthProvider(config config.GolertaConfig, http *iris.Framework) {
-	var authProvider auth.AuthProvider
+func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvider) {
 	switch config.Golerta.AuthProvider {
 	case "ldap":
 		authProvider = &config.Ldap
@@ -89,17 +76,5 @@ func BuildAuthProvider(config config.GolertaConfig, http *iris.Framework) {
 		log.Fatal("Shutting down, signing key must be provided.")
 	}
 	authProvider.SetSigningKey(config.Golerta.SigningKey)
-
-	http.Post("/auth/login", authProvider.LoginHandler)
-}
-
-func BuildAuthorizationMiddleware(signingKey string) *jwtmiddleware.Middleware {
-	jwtCofig := jwtmiddleware.Config{
-		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			return []byte(signingKey), nil
-		},
-		SigningMethod: jwt.SigningMethodHS256,
-		Extractor: jwtmiddleware.FromFirst(jwtmiddleware.FromAuthHeader, jwtmiddleware.FromParameter("api-key")),
-	}
-	return jwtmiddleware.New(jwtCofig)
+	return
 }

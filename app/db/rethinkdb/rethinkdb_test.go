@@ -4,7 +4,6 @@ import (
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
 	"testing"
-	"github.com/valyala/fasthttp"
 	"time"
 )
 
@@ -91,9 +90,8 @@ func TestRethinkDB_GetServicesGroupedByEnvironment(t *testing.T) {
 	}
 
 	//Find the alert
-	queryArgs := fasthttp.Args{}
-	queryArgs.Add("id", id)
-	groupedServices, err := db.GetAlertServicesGroupedByEnvironment(&queryArgs)
+	queryParams := map[string][]string{"id": []string{id}}
+	groupedServices, err := db.GetAlertServicesGroupedByEnvironment(queryParams)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,13 +131,13 @@ func TestRethinkDB_UpdateStatusForTimedOutAlerts(t *testing.T) {
 	db := getTestDB(t)
 
 	alert := &models.Alert{
-		Event:       "time out event",
-		Resource:    "testServer01",
-		Environment: "syd01",
-		Severity:    "informational",
-		Origin:      "consul-syd01",
+		Event:           "time out event",
+		Resource:        "testServer01",
+		Environment:     "syd01",
+		Severity:        "informational",
+		Origin:          "consul-syd01",
 		LastReceiveTime: time.Now().Add(time.Second * -2),
-		Timeout: 1,
+		Timeout:         1,
 	}
 	alert.GenerateDefaults()
 
@@ -160,8 +158,8 @@ func TestRethinkDB_UpdateStatusForTimedOutAlerts(t *testing.T) {
 	}
 	if dbAlert.Severity != "critical" || dbAlert.Value != "ALERT TIMED OUT" {
 		failMessage := "Failed to properly time out alert.\n" +
-		"Expected Severity: critical\n Actual Severity: %s\n" +
-		"Expected Value: ALERT TIMED OUT\n Actual Value: %s\n"
+			"Expected Severity: critical\n Actual Severity: %s\n" +
+			"Expected Value: ALERT TIMED OUT\n Actual Value: %s\n"
 
 		t.Fatalf(failMessage, dbAlert.Severity, dbAlert.Value)
 	}

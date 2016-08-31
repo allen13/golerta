@@ -8,8 +8,8 @@ import (
 func TestFlapDetection_Detect(t *testing.T) {
 	f := &FlapDetection{
 		HalfLifeSeconds: 60,
-		Threshold: 0.9,
-		MinimumScore: 0.01,
+		Threshold:       0.9,
+		MinimumScore:    0.01,
 	}
 
 	oneSecondAgo := time.Now().Add(-time.Second)
@@ -21,7 +21,7 @@ func TestFlapDetection_Detect(t *testing.T) {
 		t.Errorf("should be flapping")
 	}
 
-	if flapScore < 0.9  {
+	if flapScore < 0.9 {
 		t.Error("flap score should be > 0.9\nflapScore: %f", flapScore)
 	}
 
@@ -33,8 +33,8 @@ func TestFlapDetection_Detect(t *testing.T) {
 func TestFlapDetection_DetectMultiple(t *testing.T) {
 	f := &FlapDetection{
 		HalfLifeSeconds: 60,
-		Threshold: 1,
-		MinimumScore: 0.01,
+		Threshold:       1,
+		MinimumScore:    0.01,
 	}
 
 	oneSecondAgo := time.Now().Add(-time.Second)
@@ -59,8 +59,8 @@ func TestFlapDetection_DetectMultiple(t *testing.T) {
 func TestFlapDetection_DetectDecay(t *testing.T) {
 	f := &FlapDetection{
 		HalfLifeSeconds: 60,
-		Threshold: 1,
-		MinimumScore: 0.51,
+		Threshold:       1,
+		MinimumScore:    0.51,
 	}
 
 	sixtySecondsAgo := time.Now().Add(-time.Second * 60)
@@ -72,7 +72,7 @@ func TestFlapDetection_DetectDecay(t *testing.T) {
 		t.Errorf("should not be flapping")
 	}
 
-	if (flapScore > 0.5 ) {
+	if flapScore > 0.5 {
 		t.Errorf("flap score should not be > 0.5\nflapScore: %f", flapScore)
 	}
 

@@ -63,7 +63,7 @@ func (cqs *ContinuousQueryService) processStreamingAlertChanges() {
 		close(alertsChannel)
 	}
 
-	CHANGE_FEED_LOOP:
+CHANGE_FEED_LOOP:
 	for {
 		select {
 		case alertChangeFeed, ok := <-alertsChannel:
