@@ -327,7 +327,7 @@ alertaControllers.controller('ChangeStatusController', function ($scope, $uibMod
   switch(status){
     case 'ack':
         $scope.title = 'Acknowledge'
-        $scope.comment = 'Send awknowledge to notifiers and automatically re-open after a set amount of time. Critical severity changes will not send alerts to notifiers.'
+        $scope.comment = 'Send awknowledge to notifiers and automatically reopen after a set amount of time. Critical severity changes will not send alerts to notifiers.'
         break;
     case 'open':
         $scope.title = 'Open'
@@ -335,11 +335,11 @@ alertaControllers.controller('ChangeStatusController', function ($scope, $uibMod
         break;
     case 'resolved':
         $scope.title = 'Resolve'
-        $scope.comment = 'Send resolve to notifiers and remove from active alert list. Severity changes will re-open the alert. The alert will be deleted after a set amount of time.'
+        $scope.comment = 'Send resolve to notifiers and remove from active alert list. Severity changes will reopen the alert. The alert will be deleted after a set amount of time.'
         break;
     case 'silenced':
         $scope.title = 'Silence'
-        $scope.comment = 'Send resolve to notifiers and prevent future notifications. Severity changes will not re-open the alert.'
+        $scope.comment = 'Send resolve to notifiers and prevent future notifications. Severity changes will not reopen the alert.'
         break;
     default:
         $scope.title = 'Change'

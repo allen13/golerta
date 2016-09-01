@@ -422,16 +422,22 @@ func (re *RethinkDB) UpdateAlertStatus(id, status, text string, acknowledgementD
 		Id:         alert.Id,
 		Event:      alert.Event,
 		Status:     status,
+		Value:      alert.Value,
 		Text:       text,
-		Type:       "external",
+		Type:       "update by user",
 		UpdateTime: time.Now(),
 	}
 
 	updates := map[string]interface{}{
-		"status":                   status,
-		"acknowledgement_duration": acknowledgementDuration,
-		"history":                  r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(historyEvent),
+		"status":  status,
+		"history": r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(historyEvent),
 	}
+
+	if status == "ack" {
+		updates["acknowledgement_duration"] = acknowledgementDuration
+		updates["acknowledgementTime"] = time.Now()
+	}
+
 	err = re.UpdateAlert(id, updates)
 	return
 }
@@ -457,6 +463,33 @@ func (re *RethinkDB) EscalateTimedOutAlerts() error {
 	updateEachTimedOutAlert := r.DB(re.Database).Table("alerts").Filter(timedOutAlerts).Update(criticalUpdate)
 
 	_, err := updateEachTimedOutAlert.RunWrite(re.session)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (re *RethinkDB) ReopenAwknowledgedAlers() error {
+	expiredAcknowledgedAlerts := r.Row.Field("status").Eq("ack").And(
+		r.Row.Field("acknowledgement_duration").Ne(0)).And(
+		r.Row.Field("acknowledgementTime").Add(r.Row.Field("acknowledgement_duration")).Lt(r.Now()))
+
+	statusUpdate := map[string]interface{}{
+		"status":                   "open",
+		"acknowledgement_duration": 0,
+		"history": r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(r.Object(
+			"id", r.Row.Field("id"),
+			"status", "open",
+			"event", r.Row.Field("event"),
+			"value", r.Row.Field("value"),
+			"type", "continuous query - reopen acknowledged alert",
+			"updateTime", time.Now(),
+		)),
+	}
+
+	updateExpiredAcknowledgedAlerts := r.DB(re.Database).Table("alerts").Filter(expiredAcknowledgedAlerts).Update(statusUpdate)
+
+	_, err := updateExpiredAcknowledgedAlerts.RunWrite(re.session)
 	if err != nil {
 		return err
 	}

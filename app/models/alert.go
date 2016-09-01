@@ -92,6 +92,9 @@ type Alert struct {
 	//the last time this alert was received. only different to receiveTime if the alert is a duplicate
 	LastReceiveTime time.Time `gorethink:"lastReceiveTime" json:"lastReceiveTime"`
 
+	//the time that the alert was acknowledged
+	AcknowledgementTime time.Time `gorethink:"acknowledgementTime" json:"acknowledgementTime"`
+
 	//whenever an alert changes severity or status then a list of key alert attributes are appended to the history log
 	History []HistoryEvent `gorethink:"history" json:"history"`
 

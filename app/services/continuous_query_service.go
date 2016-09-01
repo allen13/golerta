@@ -27,6 +27,7 @@ func (cqs *ContinuousQueryService) Start() {
 		case <-queryTicker.C:
 			go cqs.escalateTimedOutAlerts()
 			go cqs.updateFlappingAlertScores()
+			go cqs.reopenAcknowledgedAlerts()
 		}
 	}
 }
@@ -50,6 +51,13 @@ func (cqs *ContinuousQueryService) updateFlappingAlertScores() {
 
 func (cqs *ContinuousQueryService) escalateTimedOutAlerts() {
 	err := cqs.DB.EscalateTimedOutAlerts()
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (cqs *ContinuousQueryService) reopenAcknowledgedAlerts() {
+	err := cqs.DB.ReopenAwknowledgedAlers()
 	if err != nil {
 		log.Println(err)
 	}
