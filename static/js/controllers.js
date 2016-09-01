@@ -109,7 +109,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
       {name: 'Open', value: ['open']},
       {name: 'Acknowledged', value: ['ack']},
       {name: 'Silenced', value: ['silenced']},
-      {name: 'Closed', value: ['closed', 'expired']}
+      {name: 'Resolved', value: ['resolved', 'expired']}
     ];
     $scope.status = $scope.show[0];
 
@@ -302,7 +302,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
 
     $scope.bulkCloseAlert = function(ids) {
       angular.forEach(ids, function(id) {
-        Alert.status({id: id}, {status: 'closed', text: 'bulk status change via console' + byUser}, function(data) {
+        Alert.status({id: id}, {status: 'resolved', text: 'bulk status change via console' + byUser}, function(data) {
           // $route.reload();
         });
       });
@@ -327,15 +327,19 @@ alertaControllers.controller('ChangeStatusController', function ($scope, $uibMod
   switch(status){
     case 'ack':
         $scope.title = 'Acknowledge'
+        $scope.comment = 'Send awknowledge to notifiers and automatically re-open after a set amount of time. Critical severity changes will not send alerts to notifiers.'
         break;
     case 'open':
         $scope.title = 'Open'
+        $scope.comment = 'The default alert state. Clears other states and allows all notifications to notifiers.'
         break;
-    case 'closed':
-        $scope.title = 'Close'
+    case 'resolved':
+        $scope.title = 'Resolve'
+        $scope.comment = 'Send resolve to notifiers and remove from active alert list. Severity changes will re-open the alert. The alert will be deleted after a set amount of time.'
         break;
     case 'silenced':
         $scope.title = 'Silence'
+        $scope.comment = 'Send resolve to notifiers and prevent future notifications. Severity changes will not re-open the alert.'
         break;
     default:
         $scope.title = 'Change'
@@ -452,7 +456,7 @@ alertaControllers.controller('AlertTop10Controller', ['$scope', '$location', '$t
     $scope.show = [
       {name: 'Open', value: ['open', 'unknown']},
       {name: 'Active', value: ['open', 'ack', 'assign']},
-      {name: 'Closed', value: ['closed', 'expired']}
+      {name: 'Resolved', value: ['resolved', 'expired']}
     ];
     $scope.status = $scope.show[0];
 
@@ -666,7 +670,7 @@ alertaControllers.controller('AlertWatchController', ['$scope', '$route', '$loca
 
     $scope.bulkCloseAlert = function(ids) {
       angular.forEach(ids, function(id) {
-        Alert.status({id: id}, {status: 'closed', text: 'bulk status change via console' + byUser}, function(data) {
+        Alert.status({id: id}, {status: 'resolved', text: 'bulk status change via console' + byUser}, function(data) {
           // $route.reload();
         });
       });

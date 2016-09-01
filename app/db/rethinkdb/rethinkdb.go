@@ -251,7 +251,6 @@ func (re *RethinkDB) UpdateAlert(id string, updates map[string]interface{}) erro
 
 func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert, duplicateAlert models.Alert) (err error) {
 	alertUpdate := map[string]interface{}{
-		"status":              duplicateAlert.Status,
 		"value":               duplicateAlert.Value,
 		"text":                duplicateAlert.Text,
 		"tags":                duplicateAlert.Tags,
@@ -264,6 +263,10 @@ func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert
 		"flapScore":           duplicateAlert.FlapScore,
 		"severityChangeTimes": duplicateAlert.SeverityChangeTimes,
 		"flapSeverityState":   duplicateAlert.FlapSeverityState,
+	}
+
+	if existingAlert.Status == "resolved" {
+		alertUpdate["status"] = "open"
 	}
 
 	if existingAlert.Status != duplicateAlert.Status {
@@ -285,7 +288,6 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 	alertUpdate := map[string]interface{}{
 		"severity":            correlatedAlert.Severity,
 		"previousSeverity":    existingAlert.Severity,
-		"status":              correlatedAlert.Status,
 		"value":               correlatedAlert.Value,
 		"text":                correlatedAlert.Text,
 		"tags":                correlatedAlert.Tags,
@@ -308,6 +310,11 @@ func (re *RethinkDB) UpdateExistingAlertWithCorrelated(existingAlert models.Aler
 			"updateTime", correlatedAlert.CreateTime,
 		)),
 	}
+
+	if existingAlert.Status == "resolved" {
+		alertUpdate["status"] = "open"
+	}
+
 	err = re.UpdateAlert(existingAlert.Id, alertUpdate)
 	return
 }

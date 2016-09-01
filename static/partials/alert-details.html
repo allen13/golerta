@@ -1,35 +1,36 @@
 
 <div>
-  <button type="button" class="btn btn-default"
-          ng-click="watchAlert(alert.id, user)"
-          ng-show="alert.tags.indexOf('watch:'+user) == -1"
-          ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-open"></i> Watch</button>
+  <!--<button type="button" class="btn btn-default"-->
+          <!--ng-click="watchAlert(alert.id, user)"-->
+          <!--ng-show="alert.tags.indexOf('watch:'+user) == -1"-->
+          <!--ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-open"></i> Watch</button>-->
   <button type="button" class="btn btn-default"
           ng-click="unwatchAlert(alert.id, user)"
           ng-show="alert.tags.indexOf('watch:'+user) > -1"
           ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-close"></i> Unwatch</button>
 
-  <button type="button" class="btn btn-danger"
-          ng-click="changeStatusModal('closed')"
-          ng-disabled="alert.status == 'closed'"><i class="glyphicon glyphicon-remove-sign"></i> Close</button>
+  <button type="button" class="btn btn-default"
+          ng-click="changeStatusModal('open')"
+          ng-disabled="alert.status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i> Open</button>
 
   <button type="button" class="btn btn-warning"
           ng-click="changeStatusModal('silenced')"
-          ng-disabled="alert.status == 'silenced' || alert.status == 'closed'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
+          ng-disabled="alert.status == 'silenced' || alert.status == 'resolved'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
 
   <button type="button" class="btn btn-primary"
           ng-click="changeStatusModal('ack')"
-          ng-disabled="alert.status == 'ack' || alert.status == 'closed'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
+          ng-disabled="alert.status == 'ack' || alert.status == 'resolved'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
 
   <button type="button" class="btn btn-success"
-          ng-click="changeStatusModal('open')"
-          ng-disabled="alert.status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i> Open</button>
+          ng-click="changeStatusModal('resolved')"
+          ng-disabled="alert.status == 'resolved'"><i class="glyphicon glyphicon-ok"></i> Resolve</button>
 
   <script type="text/ng-template" id="change-status-modal.html">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" ng-click="cancel()">&times;</button>
-        <h4 class="modal-title">{{ title }} Alert</h4>
+        <h4 class="modal-title">{{ title }} Alert</h4><br/>
+        <p>{{ comment }}</p>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -54,16 +55,16 @@
 
         <button type="button" class="btn btn-primary"
                 ng-click="changeAlertStatus()"
-                ng-show="status == 'ack'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
-        <button type="button" class="btn btn-success"
+                ng-show="status == 'ack'"><i class="glyphicon glyphicon-ok-circle"></i>Ack</button>
+        <button type="button" class="btn btn-default"
                 ng-click="changeAlertStatus()"
-                ng-show="status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i> Open</button>
+                ng-show="status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i>Open</button>
         <button type="button" class="btn btn-warning"
                 ng-click="changeAlertStatus()"
-                ng-show="status == 'silenced'"><i class="glyphicon glyphicon-volume-off"></i> Silence</button>
-        <button type="button" class="btn btn-danger"
+                ng-show="status == 'silenced'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
+        <button type="button" class="btn btn-success"
                 ng-click="changeAlertStatus()"
-                ng-show="status == 'closed'"><i class="glyphicon glyphicon-remove-sign"></i> Close</button>
+                ng-show="status == 'resolved'"><i class="glyphicon glyphicon-ok"></i>Resolve</button>
       </div>
     </div>
   </script>
@@ -92,13 +93,12 @@
   <tr><td><b>Text</b></td><td><span ng-bind-html="alert.text | linky:'_blank'"></span></td></tr>
   <tr><td><b>Correlate</b></td><td>{{ alert.correlate.join(', ') }}</td></tr>
   <tr><td><b>Group</b></td><td>{{ alert.group }}</td></tr>
-  <tr><td><b>Timeout</b></td><td>{{ alert.timeout }}</td></tr>
-  <tr><td><b>Type</b></td><td><span class="label">{{ alert.type | splitcaps }}</span></td></tr>
-  <tr><td><b>Duplicate Count</b></td><td>{{ alert.duplicateCount }}</td></tr>
-  <tr><td><b>Repeat</b></td><td><span class="label">{{ alert.repeat | capitalize }}</span></td></tr>
   <tr><td><b>Tags</b></td>
     <td><span ng-repeat="tag in alert.tags"><span class="label label-primary">{{ tag }}</span> </span></td>
   </tr>
+  <tr><td><b>Timeout</b></td><td>{{ alert.timeout }}</td></tr>
+  <tr><td><b>Type</b></td><td><span class="label">{{ alert.type | splitcaps }}</span></td></tr>
+  <tr><td><b>Duplicate Count</b></td><td>{{ alert.duplicateCount }}</td></tr>
   <tr ng-repeat="(key, value) in alert.attributes"><td><b>{{ key | splitcaps }}</b></td><td><span ng-bind-html="value"></span></td></tr>
   <tr class="visible-xs"><td><b>Alert ID</b></td><td>{{ alert.id | shortid }}</td></tr>
   <tr class="visible-xs"><td><b>Last Receive Alert ID</b></td><td>{{ alert.lastReceiveId | shortid }}</td></tr>

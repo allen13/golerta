@@ -93,7 +93,7 @@ func (ns *Notifiers) IsAlertAcknowledged(alertChangeFeed models.AlertChangeFeed)
 }
 
 func (ns *Notifiers) IsAlertResolved(alertChangeFeed models.AlertChangeFeed) bool {
-	return ((alertChangeFeed.NewVal.Status == "closed" ||
+	return ((alertChangeFeed.NewVal.Status == "resolved" ||
 		alertChangeFeed.NewVal.Status == "silenced") &&
 		statusChanged(alertChangeFeed)) ||
 		ns.isAlertResolvedOnSeverityChange(alertChangeFeed)
@@ -101,7 +101,9 @@ func (ns *Notifiers) IsAlertResolved(alertChangeFeed models.AlertChangeFeed) boo
 
 //Resolve any alert that has a severity that is not a trigger but previously was
 func (ns *Notifiers) isAlertResolvedOnSeverityChange(alertChangeFeed models.AlertChangeFeed) bool {
-	return !ns.alertHasTriggerSeverity(alertChangeFeed.NewVal) && ns.alertHasTriggerSeverity(alertChangeFeed.OldVal)
+	return !ns.alertHasTriggerSeverity(alertChangeFeed.NewVal) &&
+		ns.alertHasTriggerSeverity(alertChangeFeed.OldVal) &&
+		alertChangeFeed.OldVal.Status != "silenced"
 }
 
 func statusChanged(alertChangeFeed models.AlertChangeFeed) bool {
