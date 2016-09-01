@@ -64,7 +64,7 @@ type Alert struct {
 	AcknowledgementDuration int `gorethink:"acknowledgement_duration" json:"acknowledgement_duration"`
 
 	//unprocessed data eg. full syslog message or SNMP trap
-	RawData string `gorethink:"rawData" json:"rawData"`
+	RawData interface{} `gorethink:"rawData" json:"rawData"`
 
 	//Extra namespace for tracking customers in the same enviornment
 	Customer string `gorethink:"customer" json:"customer"`
