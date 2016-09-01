@@ -32,6 +32,7 @@ type golerta struct {
 	SigningKey              string   `toml:"signing_key"`
 	AuthProvider            string   `toml:"auth_provider"`
 	ContinuousQueryInterval duration `toml:"continuous_query_interval"`
+	LogAlertRequests        bool     `toml:"log_alert_requests"`
 }
 
 func BuildConfig(configFile string) (config GolertaConfig) {

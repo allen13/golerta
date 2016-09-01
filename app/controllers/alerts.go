@@ -4,25 +4,19 @@ import (
 	"github.com/allen13/golerta/app/models"
 	"github.com/allen13/golerta/app/services"
 	"github.com/labstack/echo"
+	"io/ioutil"
+	"log"
 	"net/http"
 )
 
 type AlertsController struct {
-	Echo           *echo.Echo
-	AlertService   services.AlertService
-	AuthMiddleware echo.MiddlewareFunc
+	Echo             *echo.Echo
+	AlertService     services.AlertService
+	AuthMiddleware   echo.MiddlewareFunc
+	LogAlertRequests bool
 }
 
 func (ac *AlertsController) Init() {
-	//ac.HTTP.Post("/alert", ac.AuthMiddleware.Serve, ac.createAlert)
-	//ac.HTTP.Get("/alert/:alert", ac.AuthMiddleware.Serve, ac.getAlert)
-	//ac.HTTP.Get("/alerts", ac.AuthMiddleware.Serve, ac.getAlerts)
-	//ac.HTTP.Post("/alert/:alert/status", ac.AuthMiddleware.Serve, ac.updateAlertStatus)
-	//ac.HTTP.Delete("/alert/:alert", ac.AuthMiddleware.Serve, ac.deleteAlert)
-	//ac.HTTP.Get("/alerts/count", ac.AuthMiddleware.Serve, ac.getAlertsCount)
-	//ac.HTTP.Get("/alerts/services", ac.AuthMiddleware.Serve, ac.getAlertsServices)
-	//ac.Echo.Get("/alerts/environments", ac.AuthMiddleware.Serve, ac.getAlertsEnvironments)
-
 	ac.Echo.Post("/alert", ac.createAlert, ac.AuthMiddleware)
 	ac.Echo.Get("/alert/:alert", ac.getAlert, ac.AuthMiddleware)
 	ac.Echo.Get("/alerts", ac.getAlerts, ac.AuthMiddleware)
@@ -35,7 +29,11 @@ func (ac *AlertsController) Init() {
 }
 
 func (ac *AlertsController) createAlert(ctx echo.Context) error {
-	ctx.Request().Body()
+	if ac.LogAlertRequests {
+		request, _ := ioutil.ReadAll(ctx.Request().Body())
+		log.Println(string(request))
+	}
+
 	var incomingAlert models.Alert
 	err := ctx.Bind(&incomingAlert)
 	if err != nil {

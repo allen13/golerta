@@ -46,9 +46,10 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 		FlapDetection: &config.FlapDetection,
 	}
 	alertsController := controllers.AlertsController{
-		Echo:           e,
-		AlertService:   alertsService,
-		AuthMiddleware: authMiddleware,
+		Echo:             e,
+		AlertService:     alertsService,
+		AuthMiddleware:   authMiddleware,
+		LogAlertRequests: config.Golerta.LogAlertRequests,
 	}
 	alertsController.Init()
 

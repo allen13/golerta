@@ -2,6 +2,7 @@
     signing_key = "CHANGEME"
     auth_provider = "ldap"
     continuous_query_interval = "5s"
+    log_alert_requests = false
 
 [flapdetection]
     enabled = true
