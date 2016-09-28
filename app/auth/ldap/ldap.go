@@ -59,7 +59,7 @@ func (lc *LDAPAuthProvider) Connect() error {
 				return err
 			}
 		} else {
-			l, err = ldap.DialTLS("tcp", address, &tls.Config{InsecureSkipVerify: false})
+			l, err = ldap.DialTLS("tcp", address, &tls.Config{InsecureSkipVerify: false, ServerName: lc.Host})
 			if err != nil {
 				return err
 			}
