@@ -17,6 +17,7 @@
     bind_dn = "cn=read-only-admin,dc=example,dc=com"
     bind_password = "password"
     user_filter = "(uid=%s)"
+    use_ssl = false
 
 [rethinkdb]
     address = "localhost:28015"

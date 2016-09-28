@@ -17,6 +17,7 @@
     bind_dn = "{{ .Env.LDAP_BIND_DN }}"
     bind_password = "{{ .Env.LDAP_BIND_PASSWORD }}"
     user_filter = "{{ .Env.LDAP_USER_FILTER }}"
+    use_ssl = {{ .Env.LDAP_USE_SSL }}
 
 [rethinkdb]
     address = "{{ .Env.RETHINKDB_ADDRESS }}"
