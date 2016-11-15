@@ -17,20 +17,20 @@ type AlertsController struct {
 }
 
 func (ac *AlertsController) Init() {
-	ac.Echo.Post("/alert", ac.createAlert, ac.AuthMiddleware)
-	ac.Echo.Get("/alert/:alert", ac.getAlert, ac.AuthMiddleware)
-	ac.Echo.Get("/alerts", ac.getAlerts, ac.AuthMiddleware)
-	ac.Echo.Post("/alert/:alert/status", ac.updateAlertStatus, ac.AuthMiddleware)
-	ac.Echo.Delete("/alert/:alert", ac.deleteAlert, ac.AuthMiddleware)
-	ac.Echo.Get("/alerts/count", ac.getAlertsCount, ac.AuthMiddleware)
-	ac.Echo.Get("/alerts/services", ac.getAlertsServices, ac.AuthMiddleware)
-	ac.Echo.Get("/alerts/environments", ac.getAlertsEnvironments, ac.AuthMiddleware)
+	ac.Echo.POST("/alert", ac.createAlert, ac.AuthMiddleware)
+	ac.Echo.GET("/alert/:alert", ac.getAlert, ac.AuthMiddleware)
+	ac.Echo.GET("/alerts", ac.getAlerts, ac.AuthMiddleware)
+	ac.Echo.POST("/alert/:alert/status", ac.updateAlertStatus, ac.AuthMiddleware)
+	ac.Echo.DELETE("/alert/:alert", ac.deleteAlert, ac.AuthMiddleware)
+	ac.Echo.GET("/alerts/count", ac.getAlertsCount, ac.AuthMiddleware)
+	ac.Echo.GET("/alerts/services", ac.getAlertsServices, ac.AuthMiddleware)
+	ac.Echo.GET("/alerts/environments", ac.getAlertsEnvironments, ac.AuthMiddleware)
 
 }
 
 func (ac *AlertsController) createAlert(ctx echo.Context) error {
 	if ac.LogAlertRequests {
-		request, _ := ioutil.ReadAll(ctx.Request().Body())
+		request, _ := ioutil.ReadAll(ctx.Request().Body)
 		log.Println(string(request))
 	}
 

@@ -13,7 +13,7 @@ type AuthController struct {
 }
 
 func (ac *AuthController) Init() {
-	ac.Echo.Post("/auth/login", ac.LoginHandler)
+	ac.Echo.POST("/auth/login", ac.LoginHandler)
 }
 
 // Handles login request

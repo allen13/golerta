@@ -4,9 +4,9 @@
 
 package jsonpb
 
-import "github.com/golang/protobuf/proto"
-import "fmt"
-import "math"
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 import google_protobuf "github.com/golang/protobuf/ptypes/any"
 import google_protobuf1 "github.com/golang/protobuf/ptypes/duration"
 import google_protobuf2 "github.com/golang/protobuf/ptypes/struct"

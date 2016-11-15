@@ -9,7 +9,7 @@ import os.path
 import re
 import time
 import ast
-from re import match
+from re import sub, match, split, DOTALL
 import argparse
 import codecs
 import logging

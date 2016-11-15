@@ -11,6 +11,8 @@ Example:
 	    "github.com/labstack/echo"
 	    "github.com/labstack/echo/engine/standard"
 	    "github.com/labstack/echo/middleware"
+	"net"
+	"net"
 	)
 
 	// Handler
@@ -30,7 +32,9 @@ Example:
 	    e.GET("/", hello)
 
 	    // Start server
-	    e.Run(standard.New(":1323"))
+	    if err := e.Start(":1323"); err != nil {
+			e.Logger.Fatal(err)
+		}
 	}
 
 Learn more at https://echo.labstack.com
@@ -39,36 +43,44 @@ package echo
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
+	slog "log"
 	"net/http"
 	"path"
 	"reflect"
 	"runtime"
 	"sync"
+	"time"
 
-	"golang.org/x/net/context"
-
-	"github.com/labstack/echo/engine"
-	"github.com/labstack/echo/log"
+	"github.com/labstack/gommon/color"
 	glog "github.com/labstack/gommon/log"
+	"github.com/rsc/letsencrypt"
+	"github.com/tylerb/graceful"
 )
 
 type (
 	// Echo is the top-level framework instance.
 	Echo struct {
-		premiddleware    []MiddlewareFunc
-		middleware       []MiddlewareFunc
-		maxParam         *int
-		notFoundHandler  HandlerFunc
-		httpErrorHandler HTTPErrorHandler
-		binder           Binder
-		renderer         Renderer
-		pool             sync.Pool
-		debug            bool
-		router           *Router
-		logger           log.Logger
+		DisableHTTP2 bool
+		Debug        bool
+		HTTPErrorHandler
+		Binder          Binder
+		Renderer        Renderer
+		ShutdownTimeout time.Duration
+		Color           *color.Color
+		Logger          Logger
+		server          *graceful.Server
+		tlsServer       *graceful.Server
+		tlsManager      letsencrypt.Manager
+		premiddleware   []MiddlewareFunc
+		middleware      []MiddlewareFunc
+		maxParam        *int
+		router          *Router
+		notFoundHandler HandlerFunc
+		pool            sync.Pool
 	}
 
 	// Route contains a handler and information for matching against requests.
@@ -101,6 +113,14 @@ type (
 	// Renderer is the interface that wraps the Render function.
 	Renderer interface {
 		Render(io.Writer, string, interface{}, Context) error
+	}
+
+	// Map defines a generic map of type `map[string]interface{}`.
+	Map map[string]interface{}
+
+	// i is the interface for Echo and Group.
+	i interface {
+		GET(string, HandlerFunc, ...MiddlewareFunc)
 	}
 )
 
@@ -209,67 +229,48 @@ var (
 
 // Error handlers
 var (
-	notFoundHandler = func(c Context) error {
+	NotFoundHandler = func(c Context) error {
 		return ErrNotFound
 	}
 
-	methodNotAllowedHandler = func(c Context) error {
+	MethodNotAllowedHandler = func(c Context) error {
 		return ErrMethodNotAllowed
 	}
 )
 
 // New creates an instance of Echo.
 func New() (e *Echo) {
-	e = &Echo{maxParam: new(int)}
+	e = &Echo{
+		ShutdownTimeout: 15 * time.Second,
+		Logger:          glog.New("echo"),
+		maxParam:        new(int),
+		Color:           color.New(),
+	}
+	e.HTTPErrorHandler = e.DefaultHTTPErrorHandler
+	e.Binder = &binder{}
+	e.Logger.SetLevel(glog.OFF)
 	e.pool.New = func() interface{} {
 		return e.NewContext(nil, nil)
 	}
 	e.router = NewRouter(e)
-
-	// Defaults
-	e.SetHTTPErrorHandler(e.DefaultHTTPErrorHandler)
-	e.SetBinder(&binder{})
-	l := glog.New("echo")
-	l.SetLevel(glog.ERROR)
-	e.SetLogger(l)
 	return
 }
 
 // NewContext returns a Context instance.
-func (e *Echo) NewContext(req engine.Request, res engine.Response) Context {
-	return &echoContext{
-		context:  context.Background(),
-		request:  req,
-		response: res,
+func (e *Echo) NewContext(r *http.Request, w http.ResponseWriter) Context {
+	return &context{
+		request:  r,
+		response: NewResponse(w, e),
+		store:    make(Map),
 		echo:     e,
 		pvalues:  make([]string, *e.maxParam),
-		handler:  notFoundHandler,
+		handler:  NotFoundHandler,
 	}
 }
 
 // Router returns router.
 func (e *Echo) Router() *Router {
 	return e.router
-}
-
-// Logger returns the logger instance.
-func (e *Echo) Logger() log.Logger {
-	return e.logger
-}
-
-// SetLogger defines a custom logger.
-func (e *Echo) SetLogger(l log.Logger) {
-	e.logger = l
-}
-
-// SetLogOutput sets the output destination for the logger. Default value is `os.Std*`
-func (e *Echo) SetLogOutput(w io.Writer) {
-	e.logger.SetOutput(w)
-}
-
-// SetLogLevel sets the log level for the logger. Default value ERROR.
-func (e *Echo) SetLogLevel(l glog.Lvl) {
-	e.logger.SetLevel(l)
 }
 
 // DefaultHTTPErrorHandler invokes the default HTTP error handler.
@@ -280,44 +281,17 @@ func (e *Echo) DefaultHTTPErrorHandler(err error, c Context) {
 		code = he.Code
 		msg = he.Message
 	}
-	if e.debug {
+	if e.Debug {
 		msg = err.Error()
 	}
-	if !c.Response().Committed() {
-		c.String(code, msg)
+	if !c.Response().Committed {
+		if c.Request().Method == HEAD { // Issue #608
+			c.NoContent(code)
+		} else {
+			c.String(code, msg)
+		}
 	}
-	e.logger.Error(err)
-}
-
-// SetHTTPErrorHandler registers a custom Echo.HTTPErrorHandler.
-func (e *Echo) SetHTTPErrorHandler(h HTTPErrorHandler) {
-	e.httpErrorHandler = h
-}
-
-// SetBinder registers a custom binder. It's invoked by `Context#Bind()`.
-func (e *Echo) SetBinder(b Binder) {
-	e.binder = b
-}
-
-// Binder returns the binder instance.
-func (e *Echo) Binder() Binder {
-	return e.binder
-}
-
-// SetRenderer registers an HTML template renderer. It's invoked by `Context#Render()`.
-func (e *Echo) SetRenderer(r Renderer) {
-	e.renderer = r
-}
-
-// SetDebug enable/disable debug mode.
-func (e *Echo) SetDebug(on bool) {
-	e.debug = on
-	e.SetLogLevel(glog.DEBUG)
-}
-
-// Debug returns debug mode (enabled or disabled).
-func (e *Echo) Debug() bool {
-	return e.debug
+	e.Logger.Error(err)
 }
 
 // Pre adds middleware to the chain which is run before router.
@@ -336,20 +310,10 @@ func (e *Echo) CONNECT(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(CONNECT, path, h, m...)
 }
 
-// Connect is deprecated, use `CONNECT()` instead.
-func (e *Echo) Connect(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.CONNECT(path, h, m...)
-}
-
 // DELETE registers a new DELETE route for a path with matching handler in the router
 // with optional route-level middleware.
 func (e *Echo) DELETE(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(DELETE, path, h, m...)
-}
-
-// Delete is deprecated, use `DELETE()` instead.
-func (e *Echo) Delete(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.DELETE(path, h, m...)
 }
 
 // GET registers a new GET route for a path with matching handler in the router
@@ -358,20 +322,10 @@ func (e *Echo) GET(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(GET, path, h, m...)
 }
 
-// Get is deprecated, use `GET()` instead.
-func (e *Echo) Get(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.GET(path, h, m...)
-}
-
 // HEAD registers a new HEAD route for a path with matching handler in the
 // router with optional route-level middleware.
 func (e *Echo) HEAD(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(HEAD, path, h, m...)
-}
-
-// Head is deprecated, use `HEAD()` instead.
-func (e *Echo) Head(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.HEAD(path, h, m...)
 }
 
 // OPTIONS registers a new OPTIONS route for a path with matching handler in the
@@ -380,20 +334,10 @@ func (e *Echo) OPTIONS(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(OPTIONS, path, h, m...)
 }
 
-// Options is deprecated, use `OPTIONS()` instead.
-func (e *Echo) Options(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.OPTIONS(path, h, m...)
-}
-
 // PATCH registers a new PATCH route for a path with matching handler in the
 // router with optional route-level middleware.
 func (e *Echo) PATCH(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(PATCH, path, h, m...)
-}
-
-// Patch is deprecated, use `PATCH()` instead.
-func (e *Echo) Patch(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.PATCH(path, h, m...)
 }
 
 // POST registers a new POST route for a path with matching handler in the
@@ -402,31 +346,16 @@ func (e *Echo) POST(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(POST, path, h, m...)
 }
 
-// Post is deprecated, use `POST()` instead.
-func (e *Echo) Post(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.POST(path, h, m...)
-}
-
 // PUT registers a new PUT route for a path with matching handler in the
 // router with optional route-level middleware.
 func (e *Echo) PUT(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(PUT, path, h, m...)
 }
 
-// Put is deprecated, use `PUT()` instead.
-func (e *Echo) Put(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.PUT(path, h, m...)
-}
-
 // TRACE registers a new TRACE route for a path with matching handler in the
 // router with optional route-level middleware.
 func (e *Echo) TRACE(path string, h HandlerFunc, m ...MiddlewareFunc) {
 	e.add(TRACE, path, h, m...)
-}
-
-// Trace is deprecated, use `TRACE()` instead.
-func (e *Echo) Trace(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	e.TRACE(path, h, m...)
 }
 
 // Any registers a new route for all HTTP methods and path with matching handler
@@ -448,9 +377,19 @@ func (e *Echo) Match(methods []string, path string, handler HandlerFunc, middlew
 // Static registers a new route with path prefix to serve static files from the
 // provided root directory.
 func (e *Echo) Static(prefix, root string) {
-	e.GET(prefix+"*", func(c Context) error {
-		return c.File(path.Join(root, c.P(0)))
-	})
+	static(e, prefix, root)
+}
+
+func static(i i, prefix, root string) {
+	h := func(c Context) error {
+		return c.File(path.Join(root, c.Param("*")))
+	}
+	i.GET(prefix, h)
+	if prefix == "/" {
+		i.GET(prefix+"*", h)
+	} else {
+		i.GET(prefix+"/*", h)
+	}
 }
 
 // File registers a new route with path to serve a static file.
@@ -469,7 +408,7 @@ func (e *Echo) add(method, path string, handler HandlerFunc, middleware ...Middl
 			h = middleware[i](h)
 		}
 		return h(c)
-	}, e)
+	})
 	r := Route{
 		Method:  method,
 		Path:    path,
@@ -536,16 +475,17 @@ func (e *Echo) ReleaseContext(c Context) {
 	e.pool.Put(c)
 }
 
-func (e *Echo) ServeHTTP(req engine.Request, res engine.Response) {
-	c := e.pool.Get().(*echoContext)
-	c.Reset(req, res)
+// ServeHTTP implements `http.Handler` interface, which serves HTTP requests.
+func (e *Echo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c := e.pool.Get().(*context)
+	c.Reset(r, w)
 
 	// Middleware
-	h := func(Context) error {
-		method := req.Method()
-		path := req.URL().Path()
+	h := func(c Context) error {
+		method := r.Method
+		path := r.URL.Path
 		e.router.Find(method, path, c)
-		h := c.handler
+		h := c.Handler()
 		for i := len(e.middleware) - 1; i >= 0; i-- {
 			h = e.middleware[i](h)
 		}
@@ -559,28 +499,85 @@ func (e *Echo) ServeHTTP(req engine.Request, res engine.Response) {
 
 	// Execute chain
 	if err := h(c); err != nil {
-		e.httpErrorHandler(err, c)
+		e.HTTPErrorHandler(err, c)
 	}
 
 	e.pool.Put(c)
 }
 
-// Run starts the HTTP server.
-func (e *Echo) Run(s engine.Server) {
-	s.SetHandler(e)
-	s.SetLogger(e.logger)
-	if e.Debug() {
-		e.logger.Debug("running in debug mode")
+// Start starts the HTTP server.
+func (e *Echo) Start(address string) error {
+	return e.StartServer(&http.Server{Addr: address})
+}
+
+// StartTLS starts the HTTPS server.
+func (e *Echo) StartTLS(address string, certFile, keyFile string) (err error) {
+	if certFile == "" || keyFile == "" {
+		return errors.New("invalid tls configuration")
 	}
-	e.logger.Error(s.Start())
+	config := new(tls.Config)
+	config.Certificates = make([]tls.Certificate, 1)
+	config.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return
+	}
+	return e.startTLS(address, config)
+}
+
+// StartAutoTLS starts the HTTPS server using certificates automatically from https://letsencrypt.org.
+func (e *Echo) StartAutoTLS(address string, hosts []string, cacheFile string) (err error) {
+	config := new(tls.Config)
+	config.GetCertificate = e.tlsManager.GetCertificate
+	e.tlsManager.SetHosts(hosts) // Added security
+	if err = e.tlsManager.CacheFile(cacheFile); err != nil {
+		return
+	}
+	return e.startTLS(address, config)
+}
+
+func (e *Echo) startTLS(address string, config *tls.Config) error {
+	if !e.DisableHTTP2 {
+		config.NextProtos = append(config.NextProtos, "h2")
+	}
+	return e.StartServer(&http.Server{
+		Addr:      address,
+		TLSConfig: config,
+	})
+}
+
+// StartServer runs a custom HTTP server.
+func (e *Echo) StartServer(s *http.Server) error {
+	s.Handler = e
+	gs := &graceful.Server{
+		Server:  s,
+		Timeout: e.ShutdownTimeout,
+		Logger:  slog.New(e.Logger.Output(), e.Logger.Prefix()+": ", 0),
+	}
+	if s.TLSConfig == nil {
+		e.server = gs
+		e.Color.Printf(" ⇛ http server started on %s\n", color.Green(s.Addr))
+		return gs.ListenAndServe()
+	}
+	e.tlsServer = gs
+	e.Color.Printf(" ⇛ https server started on %s\n", color.Green(s.Addr))
+	return gs.ListenAndServeTLSConfig(s.TLSConfig)
+}
+
+// Shutdown gracefully shutdown the HTTP server with timeout.
+func (e *Echo) Shutdown(timeout time.Duration) {
+	e.server.Stop(timeout)
+}
+
+// ShutdownTLS gracefully shutdown the TLS server with timeout.
+func (e *Echo) ShutdownTLS(timeout time.Duration) {
+	e.tlsServer.Stop(timeout)
 }
 
 // NewHTTPError creates a new HTTPError instance.
-func NewHTTPError(code int, msg ...string) *HTTPError {
+func NewHTTPError(code int, msg ...interface{}) *HTTPError {
 	he := &HTTPError{Code: code, Message: http.StatusText(code)}
 	if len(msg) > 0 {
-		m := msg[0]
-		he.Message = m
+		he.Message = fmt.Sprint(msg...)
 	}
 	return he
 }
@@ -590,14 +587,23 @@ func (e *HTTPError) Error() string {
 	return e.Message
 }
 
-// WrapMiddleware wrap `echo.HandlerFunc` into `echo.MiddlewareFunc`.
-func WrapMiddleware(h HandlerFunc) MiddlewareFunc {
+// WrapHandler wraps `http.Handler` into `echo.HandlerFunc`.
+func WrapHandler(h http.Handler) HandlerFunc {
+	return func(c Context) error {
+		h.ServeHTTP(c.Response(), c.Request())
+		return nil
+	}
+}
+
+// WrapMiddleware wraps `func(http.Handler) http.Handler` into `echo.MiddlewareFunc`
+func WrapMiddleware(m func(http.Handler) http.Handler) MiddlewareFunc {
 	return func(next HandlerFunc) HandlerFunc {
-		return func(c Context) error {
-			if err := h(c); err != nil {
-				return err
-			}
-			return next(c)
+		return func(c Context) (err error) {
+			m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				c.SetRequest(r)
+				err = next(c)
+			})).ServeHTTP(c.Response(), c.Request())
+			return
 		}
 	}
 }

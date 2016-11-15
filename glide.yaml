@@ -8,7 +8,7 @@ import:
 - package: github.com/docopt/docopt-go
   version: ~0.6.2
 - package: github.com/labstack/echo
-  version: ~2.0.2
+  version: ~3.0.0
   subpackages:
   - engine/fasthttp
 - package: github.com/twinj/uuid

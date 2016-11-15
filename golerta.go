@@ -7,11 +7,9 @@ import (
 	"github.com/allen13/golerta/app/config"
 	"github.com/docopt/docopt-go"
 	"log"
-
-	"github.com/labstack/echo/engine/fasthttp"
 )
 
-const version = "Golerta 0.0.1"
+const version = "Golerta 0.1.0"
 const usage = `Golerta.
 
 Usage:
@@ -37,7 +35,7 @@ func main() {
 	if args["server"].(bool) {
 		echo := app.BuildApp(config)
 		log.Println("Starting golerta server on port 5608...")
-		echo.Run(fasthttp.New(":5608"))
+		echo.Start(":5608")
 	}
 
 	if args["createAgentToken"].(bool) {
