@@ -1,8 +1,14 @@
 [golerta]
+    bind_addr = "{{ .Env.BIND_ADDR }}"
     signing_key = "{{ .Env.SIGNING_KEY }}"
     auth_provider = "{{ .Env.AUTH_PROVIDER }}"
     continuous_query_interval = "{{ .Env.CONTINUOUS_QUERY_INTERVAL }}"
     log_alert_requests = {{ .Env.LOG_ALERT_REQUESTS }}
+    tls_enabled = {{ .Env.TLS_ENABLED }}
+    tls_cert = "{{ .Env.TLS_CERT }}"
+    tls_key = "{{ .Env.TLS_KEY }}"
+    tls_auto_enabled = {{ .Env.TLS_AUTO_ENABLED }}
+    tls_auto_hosts = "{{ .Env.TLS_AUTO_HOSTS }}"
 
 [flapdetection]
     enabled = {{ .Env.FLAP_DETECTION_ENABLED }}

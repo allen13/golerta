@@ -7,6 +7,7 @@ import (
 	"github.com/allen13/golerta/app/config"
 	"github.com/docopt/docopt-go"
 	"log"
+	"strings"
 )
 
 const version = "Golerta 0.1.0"
@@ -34,8 +35,26 @@ func main() {
 
 	if args["server"].(bool) {
 		echo := app.BuildApp(config)
-		log.Println("Starting golerta server on port 5608...")
-		echo.Start(":5608")
+		log.Println("Starting golerta server...")
+
+		var err error
+
+		if config.Golerta.TLSEnabled {
+			if config.Golerta.TLSAutoEnabled {
+				tlsHosts := strings.Split(config.Golerta.TLSAutoHosts, ",")
+				err = echo.StartAutoTLS(config.Golerta.BindAddr, tlsHosts, "cert-cache")
+			} else {
+				err = echo.StartTLS(config.Golerta.BindAddr, config.Golerta.TLSCert, config.Golerta.TLSKey)
+
+			}
+		} else {
+			err = echo.Start(config.Golerta.BindAddr)
+		}
+
+		if err != nil {
+			echo.Logger.Fatal(err)
+		}
+
 	}
 
 	if args["createAgentToken"].(bool) {

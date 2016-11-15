@@ -1,6 +1,7 @@
 [golerta]
+    bind_addr = ":5608"
     signing_key = "CHANGEME"
-    auth_provider = "ldap"
+    auth_provider = "oauth"
     continuous_query_interval = "5s"
     log_alert_requests = false
 

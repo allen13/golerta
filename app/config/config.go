@@ -31,10 +31,16 @@ func (d *duration) UnmarshalText(text []byte) error {
 }
 
 type golerta struct {
+	BindAddr                string   `toml:"bind_addr"`
 	SigningKey              string   `toml:"signing_key"`
 	AuthProvider            string   `toml:"auth_provider"`
 	ContinuousQueryInterval duration `toml:"continuous_query_interval"`
 	LogAlertRequests        bool     `toml:"log_alert_requests"`
+	TLSEnabled              bool     `toml:"tls_enabled"`
+	TLSCert                 string   `toml:"tls_cert"`
+	TLSKey                  string   `toml:"tls_key"`
+	TLSAutoEnabled          bool     `toml:"tls_auto_enabled"`
+	TLSAutoHosts            string   `toml:"tls_auto_hosts"`
 }
 
 func BuildConfig(configFile string) (config GolertaConfig) {
