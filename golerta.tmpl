@@ -19,6 +19,11 @@
     user_filter = "{{ .Env.LDAP_USER_FILTER }}"
     use_ssl = {{ .Env.LDAP_USE_SSL }}
 
+[oauth]
+    host = "{{ .Env.OAUTH_HOST }}"
+    client_id = "{{ .Env.OAUTH_CLIENT_ID }}"
+    response_type = "{{ .Env.OAUTH_RESPONSE_TYPE }}"
+
 [rethinkdb]
     address = "{{ .Env.RETHINKDB_ADDRESS }}"
     database = "{{ .Env.RETHINKDB_DATABASE }}"

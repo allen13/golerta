@@ -65,6 +65,8 @@ func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvi
 	switch config.Golerta.AuthProvider {
 	case "ldap":
 		authProvider = &config.Ldap
+	case "oauth":
+		authProvider = &config.OAuth
 	}
 
 	err := authProvider.Connect()

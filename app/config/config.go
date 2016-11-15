@@ -4,6 +4,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/auth/ldap"
+	"github.com/allen13/golerta/app/auth/oauth"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/notifiers"
 	"log"
@@ -13,6 +14,7 @@ import (
 type GolertaConfig struct {
 	Golerta       golerta
 	Ldap          ldap.LDAPAuthProvider
+	OAuth         oauth.OAuthAuthProvider
 	Rethinkdb     rethinkdb.RethinkDB
 	Notifiers     notifiers.Notifiers
 	FlapDetection algorithms.FlapDetection

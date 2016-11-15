@@ -19,6 +19,11 @@
     user_filter = "(uid=%s)"
     use_ssl = false
 
+[oauth]
+    host = "openshift.default.svc.cluster.local"
+    client_id = "openshift-challenging-client"
+    response_type = "token"
+
 [rethinkdb]
     address = "localhost:28015"
     database = "golerta"

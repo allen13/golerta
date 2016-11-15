@@ -4,8 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/allen13/golerta/app/auth/token"
-	"github.com/dgrijalva/jwt-go"
+	tk "github.com/allen13/golerta/app/auth/token"
 	"gopkg.in/ldap.v2"
 	"time"
 )
@@ -21,20 +20,6 @@ type LDAPAuthProvider struct {
 	BindPassword string   `toml:"bind_password"`
 	UserFilter   string   `toml:"user_filter"`
 	Attributes   []string `toml:"attributes"`
-}
-
-func (lc *LDAPAuthProvider) createToken(username string) (string, error) {
-	expirationTimestamp := time.Now().Add(time.Hour * 48).Unix()
-	claims := jwt.MapClaims{
-		"jti":  username,
-		"iss":  "ldap",
-		"exp":  expirationTimestamp,
-		"name": username,
-		//Everyone who logs in is an admin by default for now. Could check ldap groups for this.
-		"role": "admin",
-	}
-
-	return token.CreateToken(lc.signingKey, claims)
 }
 
 func (lc *LDAPAuthProvider) SetSigningKey(key string) {
@@ -132,10 +117,7 @@ func (lc *LDAPAuthProvider) Authenticate(username, password string) (authenticat
 		return
 	}
 
-	token, err = lc.createToken(username)
-	if err != nil {
-		return
-	}
+	token = tk.CreateExpiringToken(username, lc.signingKey, time.Hour*48, "ldap")
 
 	//We authenticated and we have our token
 	authenticated = true

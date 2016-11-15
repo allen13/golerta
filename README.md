@@ -10,6 +10,7 @@ features
    
    * All-in-one server - static content, api, and continuous queries
    * LDAP Authentication
+   * OAuth Authenticaion
    * Alert routing via plugins - current plugins: file, pagerduty
    * Optional alert time outs - if an alert has a timeout field it will escalate to critical if a new alert isn't received within a given amount of time
    * Timed acknowledgements - alerts will reopen after a specified amount of time
