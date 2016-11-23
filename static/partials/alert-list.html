@@ -1,25 +1,41 @@
-
-
 <div class="container-fluid">
-
   <div class="row">
-    <div class="col-md-3 col-sm-3 col-xs-12">
+    <div class="col-md-3 col-sm-2 col-xs-12">
+
+      <button type="button" class="btn btn-default"
+              ng-click="changeStatusModal('open')"
+              ng-disabled="!alertsSelected();"><i class="glyphicon glyphicon-arrow-up"></i>Open</button>
+
+      <button type="button" class="btn btn-warning"
+              ng-click="changeStatusModal('silenced')"
+              ng-disabled="!alertsSelected();"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
+
+      <button type="button" class="btn btn-primary"
+              ng-click="changeStatusModal('ack')"
+              ng-disabled="!alertsSelected();"><i class="glyphicon glyphicon-ok-circle"></i>Ack</button>
+
+      <button type="button" class="btn btn-success"
+              ng-click="changeStatusModal('resolved')"
+              ng-disabled="!alertsSelected();"><i class="glyphicon glyphicon-ok"></i>Resolve</button>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-12">
         <select class="form-control input-sm" ng-model="option" ng-change="setService(option)"
         ng-options="s as s.service group by s.environment for s in services | orderBy:['environment','service']">
           <option value="" ng-model="option" ng-change="setService(null)">Service</option>
         </select>
     </div>
-    <div class="col-md-5 col-sm-5 col-xs-12">
+    <div class="col-md-3 col-sm-3 col-xs-12">
       <input class="form-control input" ng-model="search" size="8" placeholder="Search">
     </div>
     <div class="col-md-2 col-sm-2 col-xs-12">
       <select class="form-control input-sm" ng-options="item as item.name for item in show track by item.name" ng-model="status" ng-change="update()"></select>
     </div>
     <div class="col-md-2 col-sm-2 col-xs-12">
-      <button type="button" class="btn btn-primary btn-block" ng-click="refresh()" ng-disabled="autoRefresh">{{ refreshText }}</button>
+      <button type="button" class="btn btn-primary btn-block" ng-click="toggleRefresh()" >{{ refreshText }}</button>
     </div>
   </div> <!-- row -->
 
+  <br/>
   <div class="row">
     <div class="col-md-12">
     <ul class="nav nav-tabs">
@@ -33,8 +49,9 @@
 
   <div class="row">
     <div class="col-md-12">
-      <table class="table">
+      <table class="table table-bordered">
         <tr ng-init="predicate = [reverseSeverityCode,'lastReceiveTime']">
+          <th ><input type="checkbox" ng-click="checkSelectAll()" ng-model="selectAll" /></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = severityCode; reverse=!reverse">Severity&nbsp;<span ng-hide="predicate != severityCode"><span ng-show="!reverse">v</span><span ng-show="reverse">^</span></span></a></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = 'status'; reverse=!reverse">Status&nbsp;<span ng-hide="predicate != 'status'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-lg"><a href="" ng-click="predicate = 'lastReceiveTime'; reverse=!reverse">Time&nbsp;<span ng-hide="predicate != 'lastReceiveTime'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
@@ -45,11 +62,13 @@
           <th><a href="" ng-click="predicate = 'resource'; reverse=!reverse">Resource&nbsp;<span ng-hide="predicate != 'resource'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th><a href="" ng-click="predicate = 'event'; reverse=!reverse">Event&nbsp;<span ng-hide="predicate != 'event'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = 'value'; reverse=!reverse">Value&nbsp;<span ng-hide="predicate != 'value'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
+          <th></th>
         </tr>
 
         <tr ng-repeat="alert in alerts | filter:search | orderBy:predicate:reverse | limitTo:alertLimit"
             ng-style="{ 'color':  colors.severity[alert.severity] == 'black' ? 'white' : colors.text, 'background-color': (bulkAlerts.indexOf(alert.id) > -1) ? colors.highlight : colors.severity[alert.severity] || 'silver' }"
-            ng-click="click($event,alert);">
+            >
+          <td><input type="checkbox" ng-click="alertChecked()" ng-checked="selectAll" ng-model="alert.selected"/></td>
           <td class="hidden-xs no-wrap"><i class="glyphicon glyphicon-{{ alert.trendIndication | arrow }}"></i>&nbsp;<span class="label label-{{ alert.severity }}">{{ alert.severity | capitalize }}</span></td>
           <td class="hidden-xs"><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td>
           <td class="hidden-lg">{{ alert.lastReceiveTime | date:shortTime }}</td>
@@ -60,6 +79,7 @@
           <td>{{ alert.resource }}</td>
           <td>{{ alert.event }}</td>
           <td class="hidden-xs">{{ alert.value }}</td>
+          <td ng-click="click($event,alert);"><span class="glyphicon glyphicon-option-horizontal" aria-hidden="true"></span></td>
         </tr>
       </table>
 

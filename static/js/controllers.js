@@ -56,8 +56,8 @@ alertaControllers.controller('MenuController', ['$scope', '$location', '$auth', 
 
   }]);
 
-alertaControllers.controller('AlertListController', ['$scope', '$route', '$location', '$timeout', '$auth', 'config', 'Count', 'Environment', 'Service', 'Alert',
-  function($scope, $route, $location, $timeout, $auth, config, Count, Environment, Service, Alert){
+alertaControllers.controller('AlertListController', ['$scope', '$route', '$location', '$timeout', '$auth', '$uibModal', 'config', 'Count', 'Environment', 'Service', 'Alert',
+  function($scope, $route, $location, $timeout, $auth, $uibModal, config, Count, Environment, Service, Alert){
 
     var byUser = '';
     if ($auth.isAuthenticated()) {
@@ -94,7 +94,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
     $scope.colors = angular.merge(colorDefaults, config.colors);
 
     $scope.autoRefresh = true;
-    $scope.refreshText = 'Auto Update';
+    $scope.refreshText = 'Auto Update: On';
 
     var search = $location.search();
     if (search.environment) {
@@ -145,6 +145,74 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
       refresh();
     };
 
+    $scope.alertChecked = function() {
+      if ($scope.alertsSelected()){
+        $scope.autoRefresh = false;
+        $scope.refreshText = 'Auto Update: Off';
+      }else{
+        $scope.autoRefresh = true;
+        $scope.refreshText = 'Auto Update: On';
+      }
+    };
+    
+    $scope.checkSelectAll = function() {
+      if ($scope.selectAll){
+        $scope.autoRefresh = false;
+        $scope.refreshText = 'Auto Update: Off';  
+      }else{
+        $scope.autoRefresh = true;
+        $scope.refreshText = 'Auto Update: On';
+      }
+      
+      angular.forEach($scope.alerts, function(alert){ alert.selected = $scope.selectAll; });
+
+    };
+
+    $scope.changeStatusModal = function (status) {
+      var changeStatusModal = $uibModal.open({
+        animation: true,
+        templateUrl: 'partials/change-status-modal.html',
+        controller: 'ChangeStatusController',
+        resolve: {
+          status: function () {
+            return status;
+          }
+        }
+      });
+
+      changeStatusModal.result.then(function (statusUpdate) {
+        statusUpdate.text = "@" + $scope.user + " : " + statusUpdate.text
+        angular.forEach($scope.selectedAlerts(), function(alert){
+          Alert.status({id: alert.id}, statusUpdate, function(data) {
+            $scope.refresh();
+          });
+        });
+        $scope.selectAll = false;
+      }, function () {
+        //on close
+      });
+
+    };
+
+    $scope.selectedAlerts = function () {
+      return $scope.alerts.filter(function (alert) {
+        return alert.selected;
+      });
+    };
+
+    $scope.alertsSelected = function () {
+      return $scope.selectedAlerts().length > 0;
+    };
+
+    $scope.toggleRefresh = function () {
+      $scope.autoRefresh = !$scope.autoRefresh;
+      if($scope.autoRefresh){
+        $scope.refreshText = 'Auto Update: On';
+      } else {
+        $scope.refreshText = 'Auto Update: Off';
+      }
+    };
+
     var updateQuery = function() {
       if ($scope.service) {
         $scope.query['service'] = $scope.service
@@ -188,9 +256,9 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
         $scope.message = response.status + ' - ' + response.message;
         $scope.autoRefresh = response.autoRefresh;
         if ($scope.autoRefresh) {
-          $scope.refreshText = 'Auto Update';
+          $scope.refreshText = 'Auto Update: On';
         } else {
-          $scope.refreshText = 'Refresh';
+          $scope.refreshText = 'Auto Update: Off';
         }
       });
     };
@@ -388,7 +456,7 @@ alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$rou
     $scope.changeStatusModal = function (status) {
       var changeStatusModal = $uibModal.open({
         animation: true,
-        templateUrl: 'change-status-modal.html',
+        templateUrl: 'partials/change-status-modal.html',
         controller: 'ChangeStatusController',
         resolve: {
           status: function () {

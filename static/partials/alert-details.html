@@ -1,148 +1,110 @@
+<div class="container-fluid">
 
-<div>
-  <!--<button type="button" class="btn btn-default"-->
-          <!--ng-click="watchAlert(alert.id, user)"-->
-          <!--ng-show="alert.tags.indexOf('watch:'+user) == -1"-->
-          <!--ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-open"></i> Watch</button>-->
-  <button type="button" class="btn btn-default"
-          ng-click="unwatchAlert(alert.id, user)"
-          ng-show="alert.tags.indexOf('watch:'+user) > -1"
-          ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-close"></i> Unwatch</button>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div>
+        <!--<button type="button" class="btn btn-default"-->
+                <!--ng-click="watchAlert(alert.id, user)"-->
+                <!--ng-show="alert.tags.indexOf('watch:'+user) == -1"-->
+                <!--ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-open"></i> Watch</button>-->
+        <button type="button" class="btn btn-default"
+                ng-click="unwatchAlert(alert.id, user)"
+                ng-show="alert.tags.indexOf('watch:'+user) > -1"
+                ng-disabled="!isAuthenticated();"><i class="glyphicon glyphicon-eye-close"></i> Unwatch</button>
 
-  <button type="button" class="btn btn-default"
-          ng-click="changeStatusModal('open')"
-          ng-disabled="alert.status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i> Open</button>
+        <button type="button" class="btn btn-default"
+                ng-click="changeStatusModal('open')"
+                ng-disabled="alert.status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i> Open</button>
 
-  <button type="button" class="btn btn-warning"
-          ng-click="changeStatusModal('silenced')"
-          ng-disabled="alert.status == 'silenced' || alert.status == 'resolved'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
-
-  <button type="button" class="btn btn-primary"
-          ng-click="changeStatusModal('ack')"
-          ng-disabled="alert.status == 'ack' || alert.status == 'resolved'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
-
-  <button type="button" class="btn btn-success"
-          ng-click="changeStatusModal('resolved')"
-          ng-disabled="alert.status == 'resolved'"><i class="glyphicon glyphicon-ok"></i> Resolve</button>
-
-  <script type="text/ng-template" id="change-status-modal.html">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" ng-click="cancel()">&times;</button>
-        <h4 class="modal-title">{{ title }} Alert</h4><br/>
-        <p>{{ comment }}</p>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <div ng-show="status == 'ack'">
-            <label for="duration">Duration</label>
-            <div class="popover-content" id="duration">
-              <div class="duration">
-                <div><input class="form-control input-sm" type="number" min="0" ng-model="duration.days"> days</div>
-                <div><input class="form-control input-sm" type="number" min="0" ng-model="duration.hours" max="23"> hours</div>
-                <div><input class="form-control input-sm" type="number" min="0" ng-model="duration.minutes" max="59"> minutes</div>
-              </div>
-            </div>
-            <br/>
-          </div>
-          <label for="comment">Comments</label>
-          <textarea class="form-control" id="comment" ng-model="comments"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" ng-click="cancel()">Close</button>
-
+        <button type="button" class="btn btn-warning"
+                ng-click="changeStatusModal('silenced')"
+                ng-disabled="alert.status == 'silenced' || alert.status == 'resolved'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
 
         <button type="button" class="btn btn-primary"
-                ng-click="changeAlertStatus()"
-                ng-show="status == 'ack'"><i class="glyphicon glyphicon-ok-circle"></i>Ack</button>
-        <button type="button" class="btn btn-default"
-                ng-click="changeAlertStatus()"
-                ng-show="status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i>Open</button>
-        <button type="button" class="btn btn-warning"
-                ng-click="changeAlertStatus()"
-                ng-show="status == 'silenced'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
+                ng-click="changeStatusModal('ack')"
+                ng-disabled="alert.status == 'ack' || alert.status == 'resolved'"><i class="glyphicon glyphicon-ok-circle"></i> Ack</button>
+
         <button type="button" class="btn btn-success"
-                ng-click="changeAlertStatus()"
-                ng-show="status == 'resolved'"><i class="glyphicon glyphicon-ok"></i>Resolve</button>
+                ng-click="changeStatusModal('resolved')"
+                ng-disabled="alert.status == 'resolved'"><i class="glyphicon glyphicon-ok"></i> Resolve</button>
+
       </div>
+
+      <hr>
+
+      <table class="table table-condensed table-striped">
+        <tr><td><b>Status</b></td><td><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td></tr>
+        <tr ng-show="alert.status == 'ack'"><td><b>Acknowledgement Duration</b></td><td>{{ alert.acknowledgement_duration }}</td></tr>
+        <tr ng-show="alert.status == 'ack'"><td><b>Acknowledgement Time</b></td><td>{{ alert.acknowledgementTime | relativeDate }}</td></tr>
+        <tr><td><b>Severity</b></td>
+          <td>
+            <span class="label label-{{ alert.previousSeverity }}">{{ alert.previousSeverity | capitalize }}</span>&nbsp;&rarr;&nbsp;
+            <span class="label label-{{ alert.severity }}">{{ alert.severity | capitalize }}</span>
+          </td>
+        </tr>
+        <tr><td><b>Service</b></td><td>{{ alert.service.join(', ') }}</td></tr>
+        <tr><td><b>Event</b></td><td>{{ alert.event }}</td></tr>
+        <tr><td><b>Resource</b></td><td>{{ alert.resource }}</td></tr>
+        <tr><td><b>Environment</b></td><td>{{ alert.environment }}</td></tr>
+        <tr><td><b>Origin</b></td><td>{{ alert.origin }}</td></tr>
+        <tr ng-show="isCustomerViews();"><td><b>Customer</b></td><td>{{ alert.customer }}</td></tr>
+        <tr><td><b>Value</b></td><td>{{ alert.value }}</td></tr>
+        <tr><td><b>Text</b></td><td><span ng-bind-html="alert.text | linky:'_blank'"></span></td></tr>
+        <tr><td><b>Correlate</b></td><td>{{ alert.correlate.join(', ') }}</td></tr>
+        <tr><td><b>Group</b></td><td>{{ alert.group }}</td></tr>
+        <tr><td><b>Tags</b></td>
+          <td><span ng-repeat="tag in alert.tags"><span class="label label-primary">{{ tag }}</span> </span></td>
+        </tr>
+        <tr><td><b>Timeout</b></td><td>{{ alert.timeout }}</td></tr>
+        <tr><td><b>Type</b></td><td><span class="label">{{ alert.type | splitcaps }}</span></td></tr>
+        <tr><td><b>Duplicate Count</b></td><td>{{ alert.duplicateCount }}</td></tr>
+        <tr ng-repeat="(key, value) in alert.attributes"><td><b>{{ key | splitcaps }}</b></td><td><span ng-bind-html="value"></span></td></tr>
+        <tr class="visible-xs"><td><b>Alert ID</b></td><td>{{ alert.id | shortid }}</td></tr>
+        <tr class="visible-xs"><td><b>Last Receive Alert ID</b></td><td>{{ alert.lastReceiveId | shortid }}</td></tr>
+        <tr class="hidden-xs"><td><b>Alert ID</b></td><td>{{ alert.id }}</td></tr>
+        <tr class="hidden-xs"><td><b>Last Receive Alert ID</b></td><td>{{ alert.lastReceiveId }}</td></tr>
+        <tr><td><b>Create Time</b></td><td>{{ alert.createTime | date:longDate }} ({{ alert.createTime | relativeDate }})</td></tr>
+        <tr><td><b>Receive Time</b></td><td>{{ alert.receiveTime | date:longDate }} ({{ alert.receiveTime | relativeDate }})</td></tr>
+        <tr><td><b>Last Receive Time</b></td><td>{{ alert.lastReceiveTime | date:longDate }} ({{ alert.lastReceiveTime | relativeDate }})</td></tr>
+        <tr><td><b>Flap Score</b></td><td>{{ alert.flapScore }}</td></tr>
+        <tr><td><b>Flap Severity State</b></td><td><span class="label label-{{ alert.flapSeverityState }}">{{ alert.flapSeverityState }}</span></td></tr>
+
+      </table>
+
+      <label><input type="checkbox" ng-model="raw"> Raw Data</label>
+      <div class="animate-show" ng-show="raw">
+        <pre>{{ alert.rawData }}</pre>
+      </div>
+
+      <label><input type="checkbox" ng-model="json"> JSON-format</label>
+      <div class="animate-show" ng-show="json">
+        <pre>{{ alert | json }}</pre>
+      </div>
+
+      <table class="table table-condensed table-striped">
+        <tr>
+          <th class="hidden-lg"><b>Alert ID</b></th>
+          <th class="visible-xs"><b>Time</b></th>
+          <th class="hidden-xs"><b>Update Time</b></th>
+          <th><b>Change</b></th>
+          <th class="hidden-xs"><b>Type</b></th>
+          <th><b>Event</b></th>
+          <th class="hidden-xs"><b>Value</b></th>
+          <th class="hidden-xs"><b>Text</b></th>
+        </tr>
+        <tr ng-repeat="history in alert.history | orderBy:'updateTime':true">
+          <td class="hidden-lg">{{ history.id | shortid }}</td>
+          <td class="visible-xs">{{ history.updateTime | date:shortTime }}</td>
+          <td class="hidden-xs">{{ history.updateTime | date:longDate }}</td>
+          <td><span class="label label-{{ history.status || history.severity }}">{{ history.status || history.severity | capitalize }}</span></td>
+          <td class="hidden-xs"><span class="label label-default">{{ history.type || 'unknown' | capitalize }}</span></td>
+          <td>{{ history.event }}</td>
+          <td class="hidden-xs">{{ history.value }}</td>
+          <td class="hidden-xs"><span ng-bind-html="history.text"></span></td>
+        </tr>
+      </table>
+
     </div>
-  </script>
-
-
+  </div>
 </div>
-
-<hr>
-
-<table class="table table-condensed table-striped">
-  <tr><td><b>Status</b></td><td><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td></tr>
-  <tr ng-show="alert.status == 'ack'"><td><b>Acknowledgement Duration</b></td><td>{{ alert.acknowledgement_duration }}</td></tr>
-  <tr ng-show="alert.status == 'ack'"><td><b>Acknowledgement Time</b></td><td>{{ alert.acknowledgementTime | relativeDate }}</td></tr>
-  <tr><td><b>Severity</b></td>
-    <td>
-      <span class="label label-{{ alert.previousSeverity }}">{{ alert.previousSeverity | capitalize }}</span>&nbsp;&rarr;&nbsp;
-      <span class="label label-{{ alert.severity }}">{{ alert.severity | capitalize }}</span>
-    </td>
-  </tr>
-  <tr><td><b>Service</b></td><td>{{ alert.service.join(', ') }}</td></tr>
-  <tr><td><b>Event</b></td><td>{{ alert.event }}</td></tr>
-  <tr><td><b>Resource</b></td><td>{{ alert.resource }}</td></tr>
-  <tr><td><b>Environment</b></td><td>{{ alert.environment }}</td></tr>
-  <tr><td><b>Origin</b></td><td>{{ alert.origin }}</td></tr>
-  <tr ng-show="isCustomerViews();"><td><b>Customer</b></td><td>{{ alert.customer }}</td></tr>
-  <tr><td><b>Value</b></td><td>{{ alert.value }}</td></tr>
-  <tr><td><b>Text</b></td><td><span ng-bind-html="alert.text | linky:'_blank'"></span></td></tr>
-  <tr><td><b>Correlate</b></td><td>{{ alert.correlate.join(', ') }}</td></tr>
-  <tr><td><b>Group</b></td><td>{{ alert.group }}</td></tr>
-  <tr><td><b>Tags</b></td>
-    <td><span ng-repeat="tag in alert.tags"><span class="label label-primary">{{ tag }}</span> </span></td>
-  </tr>
-  <tr><td><b>Timeout</b></td><td>{{ alert.timeout }}</td></tr>
-  <tr><td><b>Type</b></td><td><span class="label">{{ alert.type | splitcaps }}</span></td></tr>
-  <tr><td><b>Duplicate Count</b></td><td>{{ alert.duplicateCount }}</td></tr>
-  <tr ng-repeat="(key, value) in alert.attributes"><td><b>{{ key | splitcaps }}</b></td><td><span ng-bind-html="value"></span></td></tr>
-  <tr class="visible-xs"><td><b>Alert ID</b></td><td>{{ alert.id | shortid }}</td></tr>
-  <tr class="visible-xs"><td><b>Last Receive Alert ID</b></td><td>{{ alert.lastReceiveId | shortid }}</td></tr>
-  <tr class="hidden-xs"><td><b>Alert ID</b></td><td>{{ alert.id }}</td></tr>
-  <tr class="hidden-xs"><td><b>Last Receive Alert ID</b></td><td>{{ alert.lastReceiveId }}</td></tr>
-  <tr><td><b>Create Time</b></td><td>{{ alert.createTime | date:longDate }} ({{ alert.createTime | relativeDate }})</td></tr>
-  <tr><td><b>Receive Time</b></td><td>{{ alert.receiveTime | date:longDate }} ({{ alert.receiveTime | relativeDate }})</td></tr>
-  <tr><td><b>Last Receive Time</b></td><td>{{ alert.lastReceiveTime | date:longDate }} ({{ alert.lastReceiveTime | relativeDate }})</td></tr>
-  <tr><td><b>Flap Score</b></td><td>{{ alert.flapScore }}</td></tr>
-  <tr><td><b>Flap Severity State</b></td><td><span class="label label-{{ alert.flapSeverityState }}">{{ alert.flapSeverityState }}</span></td></tr>
-
-</table>
-
-<label><input type="checkbox" ng-model="raw"> Raw Data</label>
-<div class="animate-show" ng-show="raw">
-  <pre>{{ alert.rawData }}</pre>
-</div>
-
-<label><input type="checkbox" ng-model="json"> JSON-format</label>
-<div class="animate-show" ng-show="json">
-  <pre>{{ alert | json }}</pre>
-</div>
-
-<table class="table table-condensed table-striped">
-  <tr>
-    <th class="hidden-lg"><b>Alert ID</b></th>
-    <th class="visible-xs"><b>Time</b></th>
-    <th class="hidden-xs"><b>Update Time</b></th>
-    <th><b>Change</b></th>
-    <th class="hidden-xs"><b>Type</b></th>
-    <th><b>Event</b></th>
-    <th class="hidden-xs"><b>Value</b></th>
-    <th class="hidden-xs"><b>Text</b></th>
-  </tr>
-  <tr ng-repeat="history in alert.history | orderBy:'updateTime':true">
-    <td class="hidden-lg">{{ history.id | shortid }}</td>
-    <td class="visible-xs">{{ history.updateTime | date:shortTime }}</td>
-    <td class="hidden-xs">{{ history.updateTime | date:longDate }}</td>
-    <td><span class="label label-{{ history.status || history.severity }}">{{ history.status || history.severity | capitalize }}</span></td>
-    <td class="hidden-xs"><span class="label label-default">{{ history.type || 'unknown' | capitalize }}</span></td>
-    <td>{{ history.event }}</td>
-    <td class="hidden-xs">{{ history.value }}</td>
-    <td class="hidden-xs"><span ng-bind-html="history.text"></span></td>
-  </tr>
-</table>
 

@@ -15,6 +15,7 @@ features
    * Optional alert time outs - if an alert has a timeout field it will escalate to critical if a new alert isn't received within a given amount of time
    * Timed acknowledgements - alerts will reopen after a specified amount of time
    * Flap detection - alerts that continually change severity state will be marked as flapping
+   * Select and update alerts from the list view
    * IN DEVELOPMENT: Web sockets on the client side - web browser no longer polls and new alerts are received immediately
    * IN DEVELOPMENT: Fully distributed - Currently the continuous queries can only be run on a single node without duplicating effort.
     

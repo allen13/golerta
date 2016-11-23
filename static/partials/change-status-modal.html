@@ -1,0 +1,41 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" ng-click="cancel()">&times;</button>
+        <h4 class="modal-title">{{ title }} Alert</h4><br/>
+        <p>{{ comment }}</p>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <div ng-show="status == 'ack'">
+                <label for="duration">Duration</label>
+                <div class="popover-content" id="duration">
+                    <div class="duration">
+                        <div><input class="form-control input-sm" type="number" min="0" ng-model="duration.days"> days</div>
+                        <div><input class="form-control input-sm" type="number" min="0" ng-model="duration.hours" max="23"> hours</div>
+                        <div><input class="form-control input-sm" type="number" min="0" ng-model="duration.minutes" max="59"> minutes</div>
+                    </div>
+                </div>
+                <br/>
+            </div>
+            <label for="comment">Comments</label>
+            <textarea class="form-control" id="comment" ng-model="comments"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()">Close</button>
+
+
+        <button type="button" class="btn btn-primary"
+                ng-click="changeAlertStatus()"
+                ng-show="status == 'ack'"><i class="glyphicon glyphicon-ok-circle"></i>Ack</button>
+        <button type="button" class="btn btn-default"
+                ng-click="changeAlertStatus()"
+                ng-show="status == 'open'"><i class="glyphicon glyphicon-arrow-up"></i>Open</button>
+        <button type="button" class="btn btn-warning"
+                ng-click="changeAlertStatus()"
+                ng-show="status == 'silenced'"><i class="glyphicon glyphicon-volume-off"></i>Silence</button>
+        <button type="button" class="btn btn-success"
+                ng-click="changeAlertStatus()"
+                ng-show="status == 'resolved'"><i class="glyphicon glyphicon-ok"></i>Resolve</button>
+    </div>
+</div>
