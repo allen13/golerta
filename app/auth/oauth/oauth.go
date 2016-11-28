@@ -7,6 +7,7 @@ import (
 	tk "github.com/allen13/golerta/app/auth/token"
 	"net/http"
 	"time"
+	"io/ioutil"
 )
 
 type OAuthAuthProvider struct {
@@ -55,6 +56,7 @@ func (op *OAuthAuthProvider) Authenticate(username, password string) (authentica
 		return
 	}
 
+	fmt.Println("attempting to auth")
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -62,6 +64,9 @@ func (op *OAuthAuthProvider) Authenticate(username, password string) (authentica
 		return
 	}
 
+	fmt.Printf("login response code: %d\n", resp.StatusCode)
+	content,_ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(content))
 	if resp.StatusCode == 302 {
 		authenticated = true
 		token = tk.CreateExpiringToken(username, op.signingKey, time.Hour*48, "oauth")
