@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 	"io/ioutil"
+	"errors"
 )
 
 type OAuthAuthProvider struct {
@@ -69,7 +70,7 @@ func (op *OAuthAuthProvider) Authenticate(username, password string) (authentica
 		return
 	} else {
 		message, _ := ioutil.ReadAll(resp.Body)
-		OAuthFailed(fmt.Sprintf("response code: %d message: %s", resp.StatusCode, message))
+		OAuthFailed(errors.New(fmt.Sprintf("response code: %d message: %s", resp.StatusCode, message)))
 		return
 	}
 }
