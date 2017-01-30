@@ -164,7 +164,10 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
         $scope.refreshText = 'Auto Update: On';
       }
       
-      angular.forEach($scope.alerts, function(alert){ alert.selected = $scope.selectAll; });
+      var filteredAlerts = filterFilter($scope.alerts, $scope.search);
+      angular.forEach(filteredAlerts, function(alert){
+        alert.selected = $scope.selectAll;
+      });
 
     };
 
