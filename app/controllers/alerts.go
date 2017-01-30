@@ -1,13 +1,16 @@
 package controllers
 
 import (
-	"github.com/allen13/golerta/app/models"
-	"github.com/allen13/golerta/app/services"
-	"github.com/labstack/echo"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/allen13/golerta/app/models"
+	"github.com/allen13/golerta/app/services"
+	"github.com/labstack/echo"
+	"encoding/json"
 )
+
 
 type AlertsController struct {
 	Echo             *echo.Echo
@@ -29,13 +32,15 @@ func (ac *AlertsController) Init() {
 }
 
 func (ac *AlertsController) createAlert(ctx echo.Context) error {
+	request, _ := ioutil.ReadAll(ctx.Request().Body)
 	if ac.LogAlertRequests {
-		request, _ := ioutil.ReadAll(ctx.Request().Body)
 		log.Println(string(request))
 	}
 
 	var incomingAlert models.Alert
-	err := ctx.Bind(&incomingAlert)
+	//err := ctx.Bind(&incomingAlert
+	// )
+	err := json.Unmarshal(request, &incomingAlert)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, models.ErrorResponse(err.Error()))
 	}
