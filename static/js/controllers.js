@@ -56,8 +56,8 @@ alertaControllers.controller('MenuController', ['$scope', '$location', '$auth', 
 
   }]);
 
-alertaControllers.controller('AlertListController', ['$scope', '$route', '$location', '$timeout', '$auth', '$uibModal', 'config', 'Count', 'Environment', 'Service', 'Alert',
-  function($scope, $route, $location, $timeout, $auth, $uibModal, config, Count, Environment, Service, Alert){
+alertaControllers.controller('AlertListController', ['$scope', '$route', '$location', '$timeout', '$auth', '$uibModal', 'config', 'Count', 'Environment', 'Service', 'Alert', 'filterFilter',
+  function($scope, $route, $location, $timeout, $auth, $uibModal, config, Count, Environment, Service, Alert, filterFilter){
 
     var byUser = '';
     if ($auth.isAuthenticated()) {
@@ -73,18 +73,18 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
 
     var colorDefaults = {
       severity: {
-        critical: 'red',
-        flapping: 'red',
-        major: 'orange',
-        minor: 'yellow',
-        warning: '#1E90FF',
+        critical: '#FF5555',
+        flapping: '#FF5555',
+        major: '#FF9955',
+        minor: '#DDDD55',
+        warning: '#5599FF',
         indeterminate: 'silver',
-        cleared: '#00CC00',
-        normal: '#00CC00',
-        ok: '#00CC00',
-        informational: '#00CC00',
-        debug: '#7554BF',
-        security: 'black',
+        cleared: '#55CC55',
+        normal: '#55CC55',
+        ok: '#55CC55',
+        informational: '#55CC55',
+        debug: '#AA77FF',
+        security: 'gray',
         unknown: 'silver'
       },
       text: 'black',
@@ -164,7 +164,10 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
         $scope.refreshText = 'Auto Update: On';
       }
       
-      angular.forEach($scope.alerts, function(alert){ alert.selected = $scope.selectAll; });
+      var filteredAlerts = filterFilter($scope.alerts, $scope.search);
+      angular.forEach(filteredAlerts, function(alert){
+        alert.selected = $scope.selectAll;
+      });
 
     };
 
@@ -640,17 +643,17 @@ alertaControllers.controller('AlertWatchController', ['$scope', '$route', '$loca
 
     var defaults = {
       severity: {
-        critical: 'red',
-        major: 'orange',
-        minor: 'yellow',
-        warning: '#1E90FF',
+        critical: '#FF5555',
+        major: '#FF9955',
+        minor: '#DDDD55',
+        warning: '#5599FF',
         indeterminate: 'silver',
-        cleared: '#00CC00',
-        normal: '#00CC00',
-        ok: '#00CC00',
-        informational: '#00CC00',
-        debug: '#7554BF',
-        security: 'black',
+        cleared: '#55CC55',
+        normal: '#55CC55',
+        ok: '#55CC55',
+        informational: '#55CC55',
+        debug: '#AA77FF',
+        security: 'gray',
         unknown: 'silver'
       },
       text: 'black',
