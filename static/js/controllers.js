@@ -56,8 +56,8 @@ alertaControllers.controller('MenuController', ['$scope', '$location', '$auth', 
 
   }]);
 
-alertaControllers.controller('AlertListController', ['$scope', '$route', '$location', '$timeout', '$auth', '$uibModal', 'config', 'Count', 'Environment', 'Service', 'Alert',
-  function($scope, $route, $location, $timeout, $auth, $uibModal, config, Count, Environment, Service, Alert){
+alertaControllers.controller('AlertListController', ['$scope', '$route', '$location', '$timeout', '$auth', '$uibModal', 'config', 'Count', 'Environment', 'Service', 'Alert', 'filterFilter',
+  function($scope, $route, $location, $timeout, $auth, $uibModal, config, Count, Environment, Service, Alert, filterFilter){
 
     var byUser = '';
     if ($auth.isAuthenticated()) {
