@@ -30,6 +30,16 @@ table {
     font-weight: normal;
 }
 
+[ng-click],
+[data-ng-click],
+[x-ng-click] {
+    cursor: pointer;
+}
+
+button > i.glyphicon {
+    padding-right: 8px;
+}
+
 .logo {
     font-family: "Sonsie One";
     font-size: 26pt;
