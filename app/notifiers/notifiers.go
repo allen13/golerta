@@ -1,15 +1,18 @@
 package notifiers
 
 import (
+	"log"
+
 	"github.com/allen13/golerta/app/models"
+	"github.com/allen13/golerta/app/notifiers/email"
 	"github.com/allen13/golerta/app/notifiers/file"
 	"github.com/allen13/golerta/app/notifiers/pagerduty"
-	"log"
 )
 
 type Notifiers struct {
 	File              file.File           `toml:"file"`
 	PagerDuty         pagerduty.PagerDuty `toml:"pagerduty"`
+	Email             email.Email         `toml:"email"`
 	TriggerSeverities []string            `toml:"trigger_severities"`
 	notifiers         []Notifier
 }
@@ -27,7 +30,7 @@ func (ns *Notifiers) Init() {
 		ns.TriggerSeverities = []string{"critical"}
 	}
 
-	uninitializedNotifiers := []Notifier{&ns.File, &ns.PagerDuty}
+	uninitializedNotifiers := []Notifier{&ns.File, &ns.PagerDuty, &ns.Email}
 
 	for _, notifier := range uninitializedNotifiers {
 		if notifier.Enabled() {
