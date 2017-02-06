@@ -1,9 +1,10 @@
 package rethinkdb
 
 import (
+	"time"
+
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
-	"time"
 )
 
 type RethinkDB struct {
@@ -499,7 +500,7 @@ func (re *RethinkDB) ReopenAwknowledgedAlers() error {
 func (re *RethinkDB) StreamAlertChanges(alertsChannel chan models.AlertChangeFeed) (err error) {
 	changesOpts := r.ChangesOpts{
 		IncludeTypes:   true,
-		IncludeInitial: true,
+		IncludeInitial: false,
 	}
 
 	cursor, err := r.DB(re.Database).Table("alerts").Changes(changesOpts).Run(re.session)
