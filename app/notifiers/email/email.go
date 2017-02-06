@@ -30,7 +30,7 @@ func (em *Email) Enabled() bool {
 func (em *Email) CreateEmailEvent(eventType string, alert models.Alert) error {
 	d := gomail.NewDialer(em.SmtpServer, em.SmtpPort, em.SmtpUser, em.SmtpPassword)
 	if em.SkipSslVerify {
-		d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+		d.TLSConfig = &tls.Config{InsecureSkipVerify: em.SkipSslVerify}
 	}
 	s, err := d.Dial()
 	if err != nil {
@@ -51,11 +51,7 @@ func (em *Email) CreateEmailEvent(eventType string, alert models.Alert) error {
 		m.Reset()
 	}
 
-	if err != nil {
-		return (err)
-	} else {
-		return nil
-	}
+	return (err)
 }
 
 func (em *Email) Trigger(alert models.Alert) error {
