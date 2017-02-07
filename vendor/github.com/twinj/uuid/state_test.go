@@ -21,6 +21,7 @@ var state_bytes = []byte{
 	0x23, 0x12, 0x4A, 0x11, 0x89, 0xFF,
 }
 
+
 func TestUUID_getHardwareAddress(t *testing.T) {
 	intfcs, err := net.Interfaces()
 	if err != nil {

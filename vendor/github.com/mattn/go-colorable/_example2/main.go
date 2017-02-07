@@ -1,9 +1,10 @@
 package main
 
 import (
-	".."
 	"bufio"
 	"fmt"
+
+	"github.com/mattn/go-colorable"
 )
 
 func main() {

@@ -1,22 +1,20 @@
 +++
-title = "Hello World Recipe"
-description = "Hello world recipe / example for Echo"
-[menu.side]
+title = "Hello World Example"
+description = "Hello world example for Echo"
+[menu.main]
   name = "Hello World"
   parent = "recipes"
   weight = 1
 +++
 
-## Hello World Recipe
-
-### Server
+## Server
 
 `server.go`
 
 {{< embed "hello-world/server.go" >}}
 
-### Maintainers
+## [Source Code]({{< source "hello-world" >}})
+
+## Maintainers
 
 - [vishr](https://github.com/vishr)
-
-### [Source Code]({{< source "hello-world" >}})

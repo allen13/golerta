@@ -1,41 +1,36 @@
 /*
-Package echo implements a fast and unfancy HTTP server framework for Go (Golang).
+Package echo implements high performance, minimalist Go web framework.
 
 Example:
 
-	package main
+  package main
 
-	import (
-	    "net/http"
+  import (
+    "net/http"
 
-	    "github.com/labstack/echo"
-	    "github.com/labstack/echo/engine/standard"
-	    "github.com/labstack/echo/middleware"
-	"net"
-	"net"
-	)
+    "github.com/labstack/echo"
+    "github.com/labstack/echo/middleware"
+  )
 
-	// Handler
-	func hello(c echo.Context) error {
-	    return c.String(http.StatusOK, "Hello, World!")
-	}
+  // Handler
+  func hello(c echo.Context) error {
+    return c.String(http.StatusOK, "Hello, World!")
+  }
 
-	func main() {
-	    // Echo instance
-	    e := echo.New()
+  func main() {
+    // Echo instance
+    e := echo.New()
 
-	    // Middleware
-	    e.Use(middleware.Logger())
-	    e.Use(middleware.Recover())
+    // Middleware
+    e.Use(middleware.Logger())
+    e.Use(middleware.Recover())
 
-	    // Routes
-	    e.GET("/", hello)
+    // Routes
+    e.GET("/", hello)
 
-	    // Start server
-	    if err := e.Start(":1323"); err != nil {
-			e.Logger.Fatal(err)
-		}
-	}
+    // Start server
+    e.Logger.Fatal(e.Start(":1323"))
+  }
 
 Learn more at https://echo.labstack.com
 */
@@ -47,7 +42,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	slog "log"
+	"log"
 	"net/http"
 	"path"
 	"reflect"
@@ -57,8 +52,8 @@ import (
 
 	"github.com/labstack/gommon/color"
 	glog "github.com/labstack/gommon/log"
-	"github.com/rsc/letsencrypt"
 	"github.com/tylerb/graceful"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 type (
@@ -69,12 +64,12 @@ type (
 		HTTPErrorHandler
 		Binder          Binder
 		Renderer        Renderer
+		AutoTLSManager  autocert.Manager
 		ShutdownTimeout time.Duration
 		Color           *color.Color
 		Logger          Logger
 		server          *graceful.Server
 		tlsServer       *graceful.Server
-		tlsManager      letsencrypt.Manager
 		premiddleware   []MiddlewareFunc
 		middleware      []MiddlewareFunc
 		maxParam        *int
@@ -241,6 +236,9 @@ var (
 // New creates an instance of Echo.
 func New() (e *Echo) {
 	e = &Echo{
+		AutoTLSManager: autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+		},
 		ShutdownTimeout: 15 * time.Second,
 		Logger:          glog.New("echo"),
 		maxParam:        new(int),
@@ -464,7 +462,7 @@ func (e *Echo) Routes() []Route {
 }
 
 // AcquireContext returns an empty `Context` instance from the pool.
-// You must be return the context by calling `ReleaseContext()`.
+// You must return the context by calling `ReleaseContext()`.
 func (e *Echo) AcquireContext() Context {
 	return e.pool.Get().(Context)
 }
@@ -525,13 +523,9 @@ func (e *Echo) StartTLS(address string, certFile, keyFile string) (err error) {
 }
 
 // StartAutoTLS starts the HTTPS server using certificates automatically from https://letsencrypt.org.
-func (e *Echo) StartAutoTLS(address string, hosts []string, cacheFile string) (err error) {
+func (e *Echo) StartAutoTLS(address string) error {
 	config := new(tls.Config)
-	config.GetCertificate = e.tlsManager.GetCertificate
-	e.tlsManager.SetHosts(hosts) // Added security
-	if err = e.tlsManager.CacheFile(cacheFile); err != nil {
-		return
-	}
+	config.GetCertificate = e.AutoTLSManager.GetCertificate
 	return e.startTLS(address, config)
 }
 
@@ -551,7 +545,7 @@ func (e *Echo) StartServer(s *http.Server) error {
 	gs := &graceful.Server{
 		Server:  s,
 		Timeout: e.ShutdownTimeout,
-		Logger:  slog.New(e.Logger.Output(), e.Logger.Prefix()+": ", 0),
+		Logger:  log.New(e.Logger.Output(), e.Logger.Prefix()+": ", 0),
 	}
 	if s.TLSConfig == nil {
 		e.server = gs

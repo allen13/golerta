@@ -45,3 +45,13 @@
 [notifiers.pagerduty]
     enabled = {{ .Env.PAGERDUTY_NOTIFIER_ENABLED }}
     service_key = "{{ .Env.PAGERDUTY_SERVICE_KEY }}"
+
+[notifiers.email]
+    enabled = {{ .Env.EMAIL_NOTIFIER_ENABLED }}
+    email = [{{ .Env.EMAIL_TO }}]
+    from = "{{ .Env.EMAIL_FROM }}"
+    smtp_server = "{{ .Env.EMAIL_SMTP_SERVER }}"
+    smtp_user = "{{ .Env.EMAIL_SMTP_USER }}"
+    smtp_password = "{{.Env.EMAIL_SMTP_PASSWORD }}"
+    skip_ssl_verify = {{ .Env.EMAIL_SKIP_SSL_VERIFY }}
+    smtp_port = {{ .Env.EMAIL_SMTP_PORT }}

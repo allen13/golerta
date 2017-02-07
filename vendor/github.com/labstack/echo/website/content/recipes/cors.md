@@ -1,23 +1,21 @@
 +++
-title = "CORS Recipe"
-description = "CORS recipe / example for Echo"
-[menu.side]
+title = "CORS Example"
+description = "CORS example for Echo"
+[menu.main]
   name = "CORS"
-  identifier = "cors-middleware"
+  identifier = "middleware-cors"
   parent = "recipes"
   weight = 3
 +++
 
-## CORS Recipe
-
-### Server
+## Server
 
 `server.go`
 
 {{< embed "cors/server.go" >}}
 
-### Maintainers
+## [Source Code]({{< source "cors" >}})
+
+## Maintainers
 
 - [vishr](https://github.com/vishr)
-
-### [Source Code]({{< source "cors" >}})

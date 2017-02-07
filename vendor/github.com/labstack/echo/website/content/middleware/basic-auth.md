@@ -1,15 +1,13 @@
 +++
-title = "BasicAuth Middleware"
+title = "Basic Auth Middleware"
 description = "Basic auth middleware for Echo"
-[menu.side]
-  name = "BasicAuth"
+[menu.main]
+  name = "Basic Auth"
   parent = "middleware"
   weight = 5
 +++
 
-## BasicAuth Middleware
-
-BasicAuth middleware provides an HTTP basic authentication.
+Basic auth middleware provides an HTTP basic authentication.
 
 - For valid credentials it calls the next handler.
 - For invalid credentials, it sends "401 - Unauthorized" response.
@@ -27,7 +25,7 @@ e.Use(middleware.BasicAuth(func(username, password string) bool {
 }))
 ```
 
-### Custom Configuration
+## Custom Configuration
 
 *Usage*
 
@@ -37,7 +35,7 @@ e.Use(middleware.BasicAuthWithConfig(middleware.BasicAuthConfig{},
 }))
 ```
 
-### Configuration
+## Configuration
 
 ```go
 BasicAuthConfig struct {
