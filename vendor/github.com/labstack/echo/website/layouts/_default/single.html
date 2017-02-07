@@ -1,32 +1,26 @@
 {{ partial "head.html" . }}
 <body>
-	{{ partial "navbar.html" . }}
+	{{ partial "topnav.html" . }}
 	{{ partial "sidenav.html" . }}
-	{{ partial "search.html" . }}
-	<div class="w3-main w3-padding-64">
+  <div class="w3-main w3-padding-64">
 		{{ partial "ad.html" }}
 	  <div class="w3-row-padding">
-			<div class="w3-col m9 l9">
+			<div class="w3-col m10 l10">
 				{{ partial "notice.html" }}
         <article class="content">
           <section>
+            <h1>{{ .Title }}</h1>
             {{ .Content }}
           </section>
-          <footer style="margin-top: 40px;">
-            <div id="disqus_thread"></div>
-            <script type="text/javascript">
-              /* * * CONFIGURATION VARIABLES * * */
-              var disqus_shortname = 'labstack';
-
-              /* * * DON'T EDIT BELOW THIS LINE * * */
-              (function() {
-                var dsq = document.createElement('script');
-                dsq.type = 'text/javascript';
-                dsq.async = true;
-                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-              })();
-            </script>
+          <footer>
+            <div class="w3-panel w3-pale-blue w3-leftbar w3-border-blue">
+              <p>
+                <i class="fa fa-pencil" aria-hidden="true"></i>
+                <a href="https://github.com/labstack/echo/blob/master/website/content/{{ .File.Path }}">
+                  Edit this page on GitHub
+                </a>
+              </p>
+            </div>
           </footer>
         </article>
 			</div>

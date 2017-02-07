@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/allen13/golerta/app"
 	"github.com/allen13/golerta/app/auth/token"
 	"github.com/allen13/golerta/app/config"
 	"github.com/docopt/docopt-go"
-	"log"
-	"strings"
 )
 
 const version = "Golerta 0.1.0"
@@ -41,11 +41,9 @@ func main() {
 
 		if config.Golerta.TLSEnabled {
 			if config.Golerta.TLSAutoEnabled {
-				tlsHosts := strings.Split(config.Golerta.TLSAutoHosts, ",")
-				err = echo.StartAutoTLS(config.Golerta.BindAddr, tlsHosts, "cert-cache")
+				err = echo.StartAutoTLS(config.Golerta.BindAddr)
 			} else {
 				err = echo.StartTLS(config.Golerta.BindAddr, config.Golerta.TLSCert, config.Golerta.TLSKey)
-
 			}
 		} else {
 			err = echo.Start(config.Golerta.BindAddr)

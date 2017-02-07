@@ -1,13 +1,11 @@
 +++
 title = "Error Handling"
 description = "Error handling in Echo"
-[menu.side]
+[menu.main]
   name = "Error Handling"
   parent = "guide"
   weight = 8
 +++
-
-## Error Handling
 
 Echo advocates centralized HTTP error handling by returning error from middleware
 or handlers.
@@ -42,9 +40,7 @@ func main() {
 		}
 	})
 	e.GET("/", welcome)
-	if err := e.Start(":1323"); err != nil {
-		e.Logger.Fatal(err)
-	}
+	e.Logger.Fatal(e.Start(":1323"))
 }
 
 func welcome(c echo.Context) error {

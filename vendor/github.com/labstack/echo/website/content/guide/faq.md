@@ -1,13 +1,11 @@
 +++
 title = "FAQ"
 description = "Frequently asked questions in Echo"
-[menu.side]
+[menu.main]
   name = "FAQ"
   parent = "guide"
   weight = 20
 +++
-
-## FAQ
 
 Q: How to retrieve `*http.Request` and `http.ResponseWriter` from `echo.Context`?
 

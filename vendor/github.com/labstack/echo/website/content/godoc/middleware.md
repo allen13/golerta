@@ -1,9 +1,9 @@
 +++
 title = "middleware"
-[menu.side]
+[menu.main]
   name = "middleware"
   identifier = "godoc-middleware"
   parent = "godoc"
-  weight = 1
+  weight = 2
   url = "https://godoc.org/github.com/labstack/echo/middleware"
 +++
