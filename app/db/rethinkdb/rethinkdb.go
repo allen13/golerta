@@ -266,17 +266,15 @@ func (re *RethinkDB) UpdateExistingAlertWithDuplicate(existingAlert models.Alert
 		"flapSeverityState":   duplicateAlert.FlapSeverityState,
 	}
 
+	//Reopen resolved alert
 	if existingAlert.Status == "resolved" {
 		alertUpdate["status"] = "open"
-	}
-
-	if existingAlert.Status != duplicateAlert.Status {
 		alertUpdate["history"] = r.Row.Field("history").Limit(re.AlertHistoryLimit).Prepend(r.Object(
 			"id", duplicateAlert.Id,
 			"status", duplicateAlert.Status,
 			"event", duplicateAlert.Event,
 			"value", duplicateAlert.Value,
-			"type", "duplicate alert update",
+			"type", "reopening alert",
 			"updateTime", duplicateAlert.CreateTime,
 		))
 	}
