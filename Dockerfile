@@ -62,6 +62,7 @@ ENV EMAIL_SMTP_USER test1@localhost
 ENV EMAIL_SMTP_PASSWORD password
 ENV EMAIL_SKIP_SSL_VERIFY true
 ENV EMAIL_SMTP_PORT 25
+ENV EMAIL_GOLERTA_URL http://localhost:5608
 
 CMD dockerize \
     -template ./golerta.tmpl:./golerta.toml \

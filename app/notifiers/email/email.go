@@ -17,6 +17,7 @@ type Email struct {
 	SmtpPassword  string   `toml:"smtp_password"`
 	SkipSslVerify bool     `toml:"skip_ssl_verify"`
 	From          string   `toml:"from"`
+	GolertaUrl    string   `toml:"golerta_url"`
 }
 
 func (em *Email) Init() error {
@@ -43,7 +44,10 @@ func (em *Email) CreateEmailEvent(eventType string, alert models.Alert) error {
 		m.SetHeader("From", em.From)
 		m.SetHeader("To", mail)
 		m.SetHeader("Subject", eventType+" "+alert.Severity+" "+alert.Resource+" "+alert.Environment)
-		m.SetBody("text/plain", "Alert Status:\n"+alert.Status+"\n\nAlert Comment:\n"+alert.History[0].Text+"\n\nAlert Info:\n"+alert.String())
+		m.SetBody("text/plain", "Alert URL:\n"+em.GolertaUrl+alert.Id+
+			"\n\nAlert Status:\n"+alert.Status+
+			"\n\nAlert Comment:\n"+alert.History[0].Text+
+			"\n\nAlert Info:\n"+alert.String())
 
 		if err := gomail.Send(s, m); err != nil {
 			log.Printf("Could not send mail to %q: %v", mail, err)
