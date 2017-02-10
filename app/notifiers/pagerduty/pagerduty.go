@@ -41,3 +41,7 @@ func (pd *PagerDuty) Acknowledge(alert models.Alert) error {
 func (pd *PagerDuty) Resolve(alert models.Alert) error {
 	return pd.CreatePagerDutyEvent("resolve", alert)
 }
+
+func (pd *PagerDuty) Silence(alert models.Alert) error {
+	return pd.CreatePagerDutyEvent("silence", alert)
+}

@@ -2,9 +2,10 @@ package file
 
 import (
 	"fmt"
-	"github.com/allen13/golerta/app/models"
 	"io"
 	"os"
+
+	"github.com/allen13/golerta/app/models"
 )
 
 type File struct {
@@ -30,6 +31,11 @@ func (f *File) Acknowledge(alert models.Alert) error {
 
 func (f *File) Resolve(alert models.Alert) error {
 	alertMessage := "resolving alert: " + alert.String()
+	return f.writeMessage(alertMessage)
+}
+
+func (f *File) Silence(alert models.Alert) error {
+	alertMessage := "silencing alert: " + alert.String()
 	return f.writeMessage(alertMessage)
 }
 

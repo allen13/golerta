@@ -65,3 +65,7 @@ func (em *Email) Acknowledge(alert models.Alert) error {
 func (em *Email) Resolve(alert models.Alert) error {
 	return em.CreateEmailEvent("resolve", alert)
 }
+
+func (em *Email) Silence(alert models.Alert) error {
+	return em.CreateEmailEvent("silence", alert)
+}
