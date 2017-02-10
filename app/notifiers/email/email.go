@@ -43,7 +43,7 @@ func (em *Email) CreateEmailEvent(eventType string, alert models.Alert) error {
 		m.SetHeader("From", em.From)
 		m.SetHeader("To", mail)
 		m.SetHeader("Subject", eventType+" "+alert.Severity+" "+alert.Resource+" "+alert.Environment)
-		m.SetBody("text/plain", "Alert Type:\n"+eventType+"\n\nAlert Comment:\n"+alert.History[0].Text+"\n\nAlert Info:\n"+alert.String())
+		m.SetBody("text/plain", "Alert Status:\n"+alert.Status+"\n\nAlert Comment:\n"+alert.History[0].Text+"\n\nAlert Info:\n"+alert.String())
 
 		if err := gomail.Send(s, m); err != nil {
 			log.Printf("Could not send mail to %q: %v", mail, err)
