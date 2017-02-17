@@ -156,3 +156,20 @@ alertaFilters.filter('relativeDate', function() {
       };
     });
 
+
+
+alertaFilters.filter('round', function() {
+  return function(text, amount) {
+    if(amount === undefined) {
+      amount = 2
+    }
+
+    var num = +parseFloat(text).toFixed(amount)
+
+    // Ignore anything that isn't strictly a float, even if it appears to be, i.e. 12.3abc
+    if(isNaN(text % 1) || text % 1 === 0) {
+      return text
+    }
+    return num
+  };
+});

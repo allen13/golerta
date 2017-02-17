@@ -78,7 +78,7 @@
           <td class="hidden-xs">{{ alert.service.join(', ') }}</td>
           <td>{{ alert.resource }}</td>
           <td>{{ alert.event }}</td>
-          <td class="hidden-xs">{{ alert.value }}</td>
+          <td class="hidden-xs">{{ alert.value|round }}</td>
           <td ng-click="click($event,alert);" class="text-center"><i class="glyphicon glyphicon-menu-right" aria-hidden="true"></i></td>
         </tr>
       </table>

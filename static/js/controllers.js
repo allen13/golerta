@@ -77,7 +77,7 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
         flapping: '#FF5555',
         major: '#FF9955',
         minor: '#DDDD55',
-        warning: '#5599FF',
+        warning: '#DDDD55',
         indeterminate: 'silver',
         cleared: '#55CC55',
         normal: '#55CC55',
@@ -154,16 +154,16 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
         $scope.refreshText = 'Auto Update: On';
       }
     };
-    
+
     $scope.checkSelectAll = function() {
       if ($scope.selectAll){
         $scope.autoRefresh = false;
-        $scope.refreshText = 'Auto Update: Off';  
+        $scope.refreshText = 'Auto Update: Off';
       }else{
         $scope.autoRefresh = true;
         $scope.refreshText = 'Auto Update: On';
       }
-      
+
       var filteredAlerts = filterFilter($scope.alerts, $scope.search);
       angular.forEach(filteredAlerts, function(alert){
         alert.selected = $scope.selectAll;
@@ -506,8 +506,6 @@ alertaControllers.controller('AlertDetailController', ['$scope', '$route', '$rou
       });
     };
 
-    $scope.shortTime = config.dates && config.dates.shortTime || 'HH:mm';
-    $scope.longDate = config.dates && config.dates.longDate || 'd/M/yyyy h:mm:ss.sss a';
   }]);
 
 alertaControllers.controller('AlertTop10Controller', ['$scope', '$location', '$timeout', 'Count', 'Environment', 'Service', 'Alert',
@@ -646,7 +644,7 @@ alertaControllers.controller('AlertWatchController', ['$scope', '$route', '$loca
         critical: '#FF5555',
         major: '#FF9955',
         minor: '#DDDD55',
-        warning: '#5599FF',
+        warning: '#DDDD55',
         indeterminate: 'silver',
         cleared: '#55CC55',
         normal: '#55CC55',
@@ -849,7 +847,6 @@ alertaControllers.controller('UserController', ['$scope', '$route', '$timeout', 
       $scope.users = response.users;
     });
 
-    $scope.longDate = config.dates && config.dates.longDate || 'd/M/yyyy h:mm:ss.sss a';
   }]);
 
 alertaControllers.controller('CustomerController', ['$scope', '$route', '$timeout', '$auth', 'Customers',
@@ -910,7 +907,6 @@ alertaControllers.controller('ApiKeyController', ['$scope', '$route', '$timeout'
       $scope.keys = response.keys;
     });
 
-    $scope.longDate = config.dates && config.dates.longDate || 'd/M/yyyy h:mm:ss.sss a';
   }]);
 
 alertaControllers.controller('ProfileController', ['$scope', '$auth',
@@ -956,7 +952,6 @@ alertaControllers.controller('AboutController', ['$scope', '$timeout', 'config',
       }
     });
 
-    $scope.longDate = config.dates && config.dates.longDate || 'd/M/yyyy h:mm:ss.sss a';
   }]);
 
 alertaControllers.controller('LoginController', ['$scope', '$rootScope', '$location', '$auth', 'config',

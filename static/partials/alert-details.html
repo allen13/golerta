@@ -48,7 +48,7 @@
         <tr><td><b>Environment</b></td><td>{{ alert.environment }}</td></tr>
         <tr><td><b>Origin</b></td><td>{{ alert.origin }}</td></tr>
         <tr ng-show="isCustomerViews();"><td><b>Customer</b></td><td>{{ alert.customer }}</td></tr>
-        <tr><td><b>Value</b></td><td>{{ alert.value }}</td></tr>
+        <tr><td><b>Value</b></td><td>{{ alert.value|round }}</td></tr>
         <tr><td><b>Text</b></td><td><span ng-bind-html="alert.text | linky:'_blank'"></span></td></tr>
         <tr><td><b>Correlate</b></td><td>{{ alert.correlate.join(', ') }}</td></tr>
         <tr><td><b>Group</b></td><td>{{ alert.group }}</td></tr>
