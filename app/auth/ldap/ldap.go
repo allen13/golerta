@@ -4,9 +4,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"time"
+
 	tk "github.com/allen13/golerta/app/auth/token"
 	"gopkg.in/ldap.v2"
-	"time"
 )
 
 type LDAPAuthProvider struct {
@@ -38,11 +39,6 @@ func (lc *LDAPAuthProvider) Connect() error {
 				return err
 			}
 
-			// Reconnect with TLS
-			err = l.StartTLS(&tls.Config{InsecureSkipVerify: true})
-			if err != nil {
-				return err
-			}
 		} else {
 			l, err = ldap.DialTLS("tcp", address, &tls.Config{InsecureSkipVerify: true, ServerName: lc.Host})
 			if err != nil {
