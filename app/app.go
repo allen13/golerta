@@ -30,6 +30,9 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 
 	e = echo.New()
 
+	// enable CORS if UI is detached from the golerta process
+	e.Use(middleware.CORS())
+
 	authProvider := BuildAuthProvider(config)
 
 	shouldSkipAuth := func(_ echo.Context) bool {
