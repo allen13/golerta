@@ -1,10 +1,12 @@
 package rethinkdb
 
 import (
-	"github.com/allen13/golerta/app/models"
-	r "gopkg.in/dancannon/gorethink.v2"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/allen13/golerta/app/models"
+	r "gopkg.in/dancannon/gorethink.v2"
 )
 
 //Integration test for alert CRUD operations
@@ -172,6 +174,10 @@ func TestRethinkDB_UpdateStatusForTimedOutAlerts(t *testing.T) {
 
 //docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
 func getTestDB(t *testing.T) (db *RethinkDB) {
+	if os.Getenv("SKIP_RETHINKDB") == "true" {
+		t.Skip("Request skipping rethinkdb connections")
+	}
+
 	db = &RethinkDB{}
 	err := db.Init()
 

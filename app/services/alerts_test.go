@@ -1,10 +1,12 @@
 package services
 
 import (
+	"os"
+	"testing"
+
 	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/models"
-	"testing"
 )
 
 func TestAlertService_ProcessAlert(t *testing.T) {
@@ -129,6 +131,10 @@ func TestAlertService_ProcessCorrelatedAlerts(t *testing.T) {
 
 //docker run -d --name rethinkdb -p 8080:8080 -p 28015:28015 rethinkdb
 func getTestDB(t *testing.T) (db *rethinkdb.RethinkDB) {
+	if os.Getenv("SKIP_RETHINKDB") == "true" {
+		t.Skip("Request skipping rethinkdb connections")
+	}
+
 	db = &rethinkdb.RethinkDB{}
 	err := db.Init()
 

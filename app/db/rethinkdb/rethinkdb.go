@@ -2,6 +2,7 @@ package rethinkdb
 
 import (
 	"time"
+	"os"
 
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
@@ -16,7 +17,12 @@ type RethinkDB struct {
 
 func (re *RethinkDB) Init() error {
 	if re.Address == "" {
-		re.Address = "localhost:28015"
+		// Replace with viper or equivalent env based lookup config
+		if e, ok := os.LookupEnv("RETHINKDB_ADDRESS"); ok {
+			re.Address = e
+		} else {
+			re.Address = "localhost:28015"
+		}
 	}
 	if re.Database == "" {
 		re.Database = "alerta"

@@ -4,6 +4,7 @@ WORKDIR /go/src/github.com/allen13/golerta/
 ENV GOOS=linux
 ENV GOARCH=amd64
 ENV CGO_ENABLED=0
+RUN go test ./app/...
 RUN go build -ldflags "-s -w" golerta.go
 
 FROM scratch
