@@ -5,13 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	"encoding/json"
+
 	"github.com/allen13/golerta/app/models"
 	"github.com/allen13/golerta/app/services"
 	"github.com/labstack/echo"
-	"encoding/json"
 )
 
-
+// AlertsController is the controller for /alert
 type AlertsController struct {
 	Echo             *echo.Echo
 	AlertService     services.AlertService
@@ -19,6 +20,7 @@ type AlertsController struct {
 	LogAlertRequests bool
 }
 
+// Init the alert controller
 func (ac *AlertsController) Init() {
 	ac.Echo.POST("/alert", ac.createAlert, ac.AuthMiddleware)
 	ac.Echo.GET("/alert/:alert", ac.getAlert, ac.AuthMiddleware)
@@ -51,7 +53,6 @@ func (ac *AlertsController) createAlert(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusCreated, alertsResponse)
-	return nil
 }
 
 func (ac *AlertsController) getAlerts(ctx echo.Context) error {
@@ -98,6 +99,7 @@ func (ac *AlertsController) updateAlertStatus(ctx echo.Context) error {
 	return ac.StandardResponse(ctx, models.OK_RESPONSE, err)
 }
 
+// StandardResponse for the alert controller
 func (ac *AlertsController) StandardResponse(ctx echo.Context, response interface{}, err error) error {
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err.Error()))

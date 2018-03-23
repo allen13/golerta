@@ -2,7 +2,7 @@ package models
 
 type StatusResponse struct {
 	Status  string `json:"status"`
-	Message string `json:"message, omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 var OK_RESPONSE StatusResponse = StatusResponse{
