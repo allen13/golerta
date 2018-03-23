@@ -32,3 +32,6 @@ golerta
 
 # Ignore vim temporary files
 .*.sw*
+
+#Ignore local vscode configs
+.vscode

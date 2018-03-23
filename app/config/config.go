@@ -5,6 +5,7 @@ import (
 	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/auth/ldap"
 	"github.com/allen13/golerta/app/auth/oauth"
+	"github.com/allen13/golerta/app/auth/noop"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/notifiers"
 	"log"
@@ -15,6 +16,7 @@ type GolertaConfig struct {
 	Golerta       golerta
 	Ldap          ldap.LDAPAuthProvider
 	OAuth         oauth.OAuthAuthProvider
+	Noop          noop.NoopAuthProvider
 	Rethinkdb     rethinkdb.RethinkDB
 	Notifiers     notifiers.Notifiers
 	FlapDetection algorithms.FlapDetection
@@ -56,7 +58,7 @@ func BuildConfig(configFile string) (config GolertaConfig) {
 
 func setDefaultConfigs(config *GolertaConfig) {
 	if config.Golerta.AuthProvider == "" {
-		config.Golerta.AuthProvider = "ldap"
+		config.Golerta.AuthProvider = "noop"
 	}
 	if config.Golerta.ContinuousQueryInterval.Duration == 0 {
 		config.Golerta.ContinuousQueryInterval.Duration = time.Second * 5

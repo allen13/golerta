@@ -2,11 +2,11 @@ package app
 
 import (
 	"github.com/allen13/golerta/app/auth"
-	"github.com/allen13/golerta/app/auth/middleware"
 	"github.com/allen13/golerta/app/config"
 	"github.com/allen13/golerta/app/controllers"
 	"github.com/allen13/golerta/app/services"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"log"
 )
 
@@ -31,10 +31,20 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 	e = echo.New()
 
 	authProvider := BuildAuthProvider(config)
+
+	shouldSkipAuth := func(_ echo.Context) bool {
+		log.Print(config.Golerta.AuthProvider)
+		c := config.Golerta.AuthProvider == "noop"
+		log.Print(c)
+		return c
+	}
+
 	authMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{
+		Skipper:     shouldSkipAuth,
 		SigningKey:  []byte(config.Golerta.SigningKey),
 		TokenLookup: "header:Authorization,query:api-key",
 	})
+
 	authController := controllers.AuthController{
 		Echo:         e,
 		AuthProvider: authProvider,
@@ -67,6 +77,8 @@ func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvi
 		authProvider = &config.Ldap
 	case "oauth":
 		authProvider = &config.OAuth
+	case "noop":
+		authProvider = &config.Noop
 	}
 
 	err := authProvider.Connect()
