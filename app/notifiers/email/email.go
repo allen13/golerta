@@ -9,15 +9,15 @@ import (
 )
 
 type Email struct {
-	Addresses     []string `toml:"email"`
-	EnabledField  bool     `toml:"enabled"`
-	SmtpServer    string   `toml:"smtp_server"`
-	SmtpPort      int      `toml:"smtp_port"`
-	SmtpUser      string   `toml:"smtp_user"`
-	SmtpPassword  string   `toml:"smtp_password"`
-	SkipSslVerify bool     `toml:"skip_ssl_verify"`
-	From          string   `toml:"from"`
-	GolertaUrl    string   `toml:"golerta_url"`
+	Addresses     []string `mapstructure:"email"`
+	EnabledField  bool     `mapstructure:"enabled"`
+	SmtpServer    string   `mapstructure:"smtp_server"`
+	SmtpPort      int      `mapstructure:"smtp_port"`
+	SmtpUser      string   `mapstructure:"smtp_user"`
+	SmtpPassword  string   `mapstructure:"smtp_password"`
+	SkipSslVerify bool     `mapstructure:"skip_ssl_verify"`
+	From          string   `mapstructure:"from"`
+	GolertaUrl    string   `mapstructure:"golerta_url"`
 }
 
 func (em *Email) Init() error {

@@ -20,6 +20,12 @@ features
    * IN DEVELOPMENT: Fully distributed - Currently the continuous queries can only be run on a single node without duplicating effort.
 
 
+configuration
+-------------
+
+Golerta uses [Viper](https://github.com/spf13/viper) for configuration. This supports a wide variety of formats, including JSON, YAML, TOML, and HCL. See docker-example/example.toml for an example configuration. In addition to a config file, environment variables can be set to match the configuration. Variables are prefixed with GOLERTA_, followed by the main section (such as LDAP_), then the value (all together GOLERTA_LDAP_HOST). For example, the parent app structure would look like the following JSON ```{"app": {"bind_addr": 5608, "signing_key": "super_secret_signing_key"}}```, the equivalent environment variable is GOLERTA_APP_BIND_ADDR. This is very useful for docker containers.
+
+
 docker image
 ------------
 Example: Run golerta minimal
@@ -28,11 +34,16 @@ Example: Run golerta minimal
 
 Example: Run golerta by linking to both the rethinkdb and smtp service containers.
 
-    docker run -p 5608:5608 --link rethinkdb:rethinkdb --link smtp:smtp -e RETHINKDB_ADDRESS=rethinkdb:28015 -e EMAIL_NOTIFIER_ENABLED=true -e EMAIL_SMTP_SERVER=smtp golerta
+    docker run -p 5608:5608 --link rethinkdb:rethinkdb --link smtp:smtp -e GOLERTA_RETHINKDB_ADDRESS=rethinkdb:28015 -e GOLERTA_EMAIL_NOTIFIER_ENABLED=true -e GOLERTA_EMAIL_SMTP_SERVER=smtp golerta
 
-Example: Getting an agent auth token
+Example: Using composer for a full tick stack, including an example toml file
 
-    docker exec -it dockerexample_golerta_1 /golerta createAgentToken gauss
+    cd docker-compose.yml
+    docker-compose up -d
+
+Example: Getting an agent auth token (where $GOLERTA is the docker container ID or name) from a docker container
+
+    docker exec -it $GOLERTA /golerta createAgentToken gauss
 
 development environment
 -----------------------
@@ -59,4 +70,5 @@ Run all unit tests:
 
     go test ./app/...
 
+If RethinkDB is not available, or relevant to the given tests, SKIP_RETHINKDB=true can be set to skip database related tests.
 

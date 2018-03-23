@@ -1,4 +1,4 @@
-[golerta]
+[app]
     bind_addr = ":5608"
     signing_key = "CHANGEME"
     auth_provider = "ldap"

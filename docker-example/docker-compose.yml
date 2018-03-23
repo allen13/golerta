@@ -39,7 +39,7 @@ services:
     volumes:
     - ./example.toml:/golerta.toml
     environment:
-    - RETHINKDB_ADDRESS=rethinkdb:28015
+    - GOLERTA_RETHINKDB_ADDRESS=rethinkdb:28015
     ports:
     - "5608:5608"
     links:

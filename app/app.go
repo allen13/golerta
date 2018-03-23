@@ -22,7 +22,7 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 
 	continuousQueryService := &services.ContinuousQueryService{
 		DB:            db,
-		QueryInterval: config.Golerta.ContinuousQueryInterval.Duration,
+		QueryInterval: config.App.ContinuousQueryInterval.Duration,
 		Notifiers:     config.Notifiers,
 		FlapDetection: &config.FlapDetection,
 	}
@@ -36,15 +36,15 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 	authProvider := BuildAuthProvider(config)
 
 	shouldSkipAuth := func(_ echo.Context) bool {
-		log.Print(config.Golerta.AuthProvider)
-		c := config.Golerta.AuthProvider == "noop"
+		log.Print(config.App.AuthProvider)
+		c := config.App.AuthProvider == "noop"
 		log.Print(c)
 		return c
 	}
 
 	authMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{
 		Skipper:     shouldSkipAuth,
-		SigningKey:  []byte(config.Golerta.SigningKey),
+		SigningKey:  []byte(config.App.SigningKey),
 		TokenLookup: "header:Authorization,query:api-key",
 	})
 
@@ -62,7 +62,7 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 		Echo:             e,
 		AlertService:     alertsService,
 		AuthMiddleware:   authMiddleware,
-		LogAlertRequests: config.Golerta.LogAlertRequests,
+		LogAlertRequests: config.App.LogAlertRequests,
 	}
 	alertsController.Init()
 
@@ -75,7 +75,7 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 }
 
 func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvider) {
-	switch config.Golerta.AuthProvider {
+	switch config.App.AuthProvider {
 	case "ldap":
 		authProvider = &config.Ldap
 	case "oauth":
@@ -90,9 +90,9 @@ func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvi
 	if err != nil {
 		log.Fatal(err)
 	}
-	if config.Golerta.SigningKey == "" {
+	if config.App.SigningKey == "" {
 		log.Fatal("Shutting down, signing key must be provided.")
 	}
-	authProvider.SetSigningKey(config.Golerta.SigningKey)
+	authProvider.SetSigningKey(config.App.SigningKey)
 	return
 }

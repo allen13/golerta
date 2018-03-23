@@ -8,8 +8,8 @@ import (
 )
 
 type File struct {
-	Files        []string `toml:"file"`
-	EnabledField bool     `toml:"enabled"`
+	Files        []string `mapstructure:"file"`
+	EnabledField bool     `mapstructure:"enabled"`
 	writer       io.Writer
 	closers      []io.Closer
 }

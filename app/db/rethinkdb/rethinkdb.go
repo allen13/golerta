@@ -2,27 +2,21 @@ package rethinkdb
 
 import (
 	"time"
-	"os"
 
 	"github.com/allen13/golerta/app/models"
 	r "gopkg.in/dancannon/gorethink.v2"
 )
 
 type RethinkDB struct {
-	Address           string `toml:"address"`
-	Database          string `toml:"database"`
-	AlertHistoryLimit int    `toml:"alert_history_limit"`
+	Address           string `mapstructure:"address"`
+	Database          string `mapstructure:"database"`
+	AlertHistoryLimit int    `mapstructure:"alert_history_limit"`
 	session           *r.Session
 }
 
 func (re *RethinkDB) Init() error {
 	if re.Address == "" {
-		// Replace with viper or equivalent env based lookup config
-		if e, ok := os.LookupEnv("RETHINKDB_ADDRESS"); ok {
-			re.Address = e
-		} else {
-			re.Address = "localhost:28015"
-		}
+		re.Address = "localhost:28015"
 	}
 	if re.Database == "" {
 		re.Database = "alerta"
@@ -33,6 +27,7 @@ func (re *RethinkDB) Init() error {
 
 	return re.connect()
 }
+
 func (re *RethinkDB) connect() error {
 	session, err := r.Connect(r.ConnectOpts{
 		Address: re.Address,

@@ -13,14 +13,14 @@ import (
 type LDAPAuthProvider struct {
 	conn         *ldap.Conn
 	signingKey   string
-	Host         string   `toml:"host"`
-	Port         int      `toml:"port"`
-	UseSSL       bool     `toml:"use_ssl"`
-	BaseDN       string   `toml:"base_dn"`
-	BindDN       string   `toml:"bind_dn"`
-	BindPassword string   `toml:"bind_password"`
-	UserFilter   string   `toml:"user_filter"`
-	Attributes   []string `toml:"attributes"`
+	Host         string   `mapstructure:"host"`
+	Port         int      `mapstructure:"port"`
+	UseSSL       bool     `mapstructure:"use_ssl"`
+	BaseDN       string   `mapstructure:"base_dn"`
+	BindDN       string   `mapstructure:"bind_dn"`
+	BindPassword string   `mapstructure:"bind_password"`
+	UserFilter   string   `mapstructure:"user_filter"`
+	Attributes   []string `mapstructure:"attributes"`
 }
 
 func (lc *LDAPAuthProvider) SetSigningKey(key string) {
