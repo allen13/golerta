@@ -1,0 +1,37 @@
+[golerta]
+    bind_addr = ":5608"
+    signing_key = "CHANGEME"
+    auth_provider = "ldap"
+    continuous_query_interval = "5s"
+    log_alert_requests = false
+
+[flapdetection]
+    enabled = true
+    half_life_seconds = 60.0
+    threshold = 4.0
+    minimum_score = 0.02
+
+[ldap]
+    host = "ldap.forumsys.com"
+    port = 389
+    base_dn = "dc=example,dc=com"
+    bind_dn = "cn=read-only-admin,dc=example,dc=com"
+    bind_password = "password"
+    user_filter = "(uid=%s)"
+    use_ssl = false
+
+[rethinkdb]
+    address = "rethinkdb:28015"
+    database = "golerta"
+    alert_history_limit = 100
+
+[notifiers]
+    trigger_severities = ["critical","flapping"]
+
+[notifiers.file]
+    enabled = true
+    files = ["stdout"]
+
+[notifiers.pagerduty]
+    enabled = false
+    service_key = "pagerduty service key here"

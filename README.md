@@ -30,6 +30,10 @@ Example: Run golerta by linking to both the rethinkdb and smtp service container
 
     docker run -p 5608:5608 --link rethinkdb:rethinkdb --link smtp:smtp -e RETHINKDB_ADDRESS=rethinkdb:28015 -e EMAIL_NOTIFIER_ENABLED=true -e EMAIL_SMTP_SERVER=smtp golerta
 
+Example: Getting an agent auth token
+
+    docker exec -it dockerexample_golerta_1 /golerta createAgentToken gauss
+
 development environment
 -----------------------
 
