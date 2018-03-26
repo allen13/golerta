@@ -1,13 +1,16 @@
 package app
 
 import (
+	"log"
+
+	"github.com/labstack/echo"
+	echoMiddleware "github.com/labstack/echo/middleware"
+
 	"github.com/allen13/golerta/app/auth"
+	"github.com/allen13/golerta/app/auth/middleware"
 	"github.com/allen13/golerta/app/config"
 	"github.com/allen13/golerta/app/controllers"
 	"github.com/allen13/golerta/app/services"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
-	"log"
 )
 
 func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
@@ -31,14 +34,12 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 	e = echo.New()
 
 	// enable CORS if UI is detached from the golerta process
-	e.Use(middleware.CORS())
+	e.Use(echoMiddleware.CORS())
 
 	authProvider := BuildAuthProvider(config)
 
 	shouldSkipAuth := func(_ echo.Context) bool {
-		log.Print(config.App.AuthProvider)
 		c := config.App.AuthProvider == "noop"
-		log.Print(c)
 		return c
 	}
 
