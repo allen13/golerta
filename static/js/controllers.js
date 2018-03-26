@@ -256,7 +256,9 @@ alertaControllers.controller('AlertListController', ['$scope', '$route', '$locat
         if (response.status == 'ok') {
           $scope.alerts = response.alerts;
         }
-        $scope.message = response.status + ' - ' + response.message;
+        if (response.message) {
+          $scope.message = response.status + ' - ' + response.message;
+        }
         $scope.autoRefresh = response.autoRefresh;
         if ($scope.autoRefresh) {
           $scope.refreshText = 'Auto Update: On';
@@ -599,7 +601,9 @@ alertaControllers.controller('AlertTop10Controller', ['$scope', '$location', '$t
         if (response.status == 'ok') {
           $scope.top10 = response.top10;
         }
-        $scope.message = response.status + ' - ' + response.message;
+        if (response.message) {
+          $scope.message = response.status + ' - ' + response.message;
+        }
         $scope.autoRefresh = response.autoRefresh;
         if ($scope.autoRefresh) {
           $scope.refreshText = 'Auto Update';
@@ -667,7 +671,9 @@ alertaControllers.controller('AlertWatchController', ['$scope', '$route', '$loca
         if (response.status == 'ok') {
           $scope.watches = response.alerts;
         }
-        $scope.message = response.status + ' - ' + response.message;
+        if (response.message) {
+          $scope.message = response.status + ' - ' + response.message;
+        }
       });
       timer = $timeout(refresh, 5000);
     };
