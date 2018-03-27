@@ -35,5 +35,3 @@ golerta
 
 #Ignore local vscode configs
 .vscode
-
-vendor

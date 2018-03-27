@@ -9,13 +9,13 @@ import (
 // MaintenanceWindow is used to temporarily disable one or more services for a set period of time.
 type MaintenanceWindow struct {
 	APIObject
-	SequenceNumber uint   `json:"sequence_number,omitempty"`
-	StartTime      string `json:"start_time"`
-	EndTime        string `json:"end_time"`
-	Description    string
-	Services       []APIObject
-	Teams          []APIListObject
-	CreatedBy      APIListObject `json:"created_by"`
+	SequenceNumber uint            `json:"sequence_number,omitempty"`
+	StartTime      string          `json:"start_time"`
+	EndTime        string          `json:"end_time"`
+	Description    string          `json:"description"`
+	Services       []APIObject     `json:"services"`
+	Teams          []APIListObject `json:"teams"`
+	CreatedBy      APIListObject   `json:"created_by"`
 }
 
 // ListMaintenanceWindowsResponse is the data structur returned from calling the ListMaintenanceWindows API endpoint.
@@ -48,17 +48,17 @@ func (c *Client) ListMaintenanceWindows(o ListMaintenanceWindowsOptions) (*ListM
 	return &result, c.decodeJSON(resp, &result)
 }
 
-// CreateMaintaienanceWindows creates a new maintenance window for the specified services.
-func (c *Client) CreateMaintaienanceWindows(m MaintenanceWindow) (*MaintenanceWindow, error) {
+// CreateMaintenanceWindows creates a new maintenance window for the specified services.
+func (c *Client) CreateMaintenanceWindows(m MaintenanceWindow) (*MaintenanceWindow, error) {
 	data := make(map[string]MaintenanceWindow)
 	data["maintenance_window"] = m
-	resp, err := c.post("/mainteance_windows", data)
+	resp, err := c.post("/maintenance_windows", data)
 	return getMaintenanceWindowFromResponse(c, resp, err)
 }
 
 // DeleteMaintenanceWindow deletes an existing maintenance window if it's in the future, or ends it if it's currently on-going.
 func (c *Client) DeleteMaintenanceWindow(id string) error {
-	_, err := c.delete("/mainteance_windows/" + id)
+	_, err := c.delete("/maintenance_windows/" + id)
 	return err
 }
 
@@ -73,7 +73,7 @@ func (c *Client) GetMaintenanceWindow(id string, o GetMaintenanceWindowOptions) 
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.get("/mainteance_windows/" + id + "?" + v.Encode())
+	resp, err := c.get("/maintenance_windows/" + id + "?" + v.Encode())
 	return getMaintenanceWindowFromResponse(c, resp, err)
 }
 
