@@ -1,6 +1,7 @@
 package rethinkdb
 
 import (
+	"os"
 	"time"
 
 	"github.com/allen13/golerta/app/models"
@@ -16,10 +17,18 @@ type RethinkDB struct {
 
 func (re *RethinkDB) Init() error {
 	if re.Address == "" {
-		re.Address = "localhost:28015"
+		if a, ok := os.LookupEnv("GOLERTA_RETHINKDB_ADDRESS"); ok {
+			re.Address = a
+		} else {
+			re.Address = "localhost:28015"
+		}
 	}
 	if re.Database == "" {
-		re.Database = "alerta"
+		if d, ok := os.LookupEnv("GOLERTA_RETHINKDB_DATABASE"); ok {
+			re.Database = d
+		} else {
+			re.Database = "alerta"
+		}
 	}
 	if re.AlertHistoryLimit == 0 {
 		re.AlertHistoryLimit = 100
@@ -398,7 +407,7 @@ func (re *RethinkDB) CountAlertsGroup(group string, queryArgs map[string][]strin
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group(group).Count().Ungroup().Map(
 		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term) r.Term {
 		return left.Merge(right)
-	})
+	}).Default(func(e r.Term) r.Term {return r.Branch(e.Eq("Cannot reduce over an empty stream."), make(map[string]int), r.Error())})
 
 	res, err := t.Run(re.session)
 	if err != nil {
