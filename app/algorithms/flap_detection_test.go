@@ -18,11 +18,11 @@ func TestFlapDetection_Detect(t *testing.T) {
 	isFlapping, flapScore, remainingSeverityTimeChanges := f.Detect(severityTimeChanges)
 
 	if !isFlapping {
-		t.Errorf("should be flapping")
+		t.Error("should be flapping")
 	}
 
 	if flapScore < 0.9 {
-		t.Error("flap score should be > 0.9\nflapScore: %f", flapScore)
+		t.Errorf("flap score should be > 0.9\nflapScore: %f", flapScore)
 	}
 
 	if len(remainingSeverityTimeChanges) != 1 {

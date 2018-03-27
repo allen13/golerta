@@ -1,10 +1,11 @@
 package services
 
 import (
+	"log"
+
 	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/models"
-	"log"
 )
 
 type AlertService struct {
@@ -96,6 +97,7 @@ func (as *AlertService) GetAlert(id string) (alertResponse models.AlertResponse,
 func (as *AlertService) GetAlerts(queryParams map[string][]string) (alertsResponse models.AlertsResponse, err error) {
 	alerts, err := as.DB.GetAlertsSummary(queryParams)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	alertsResponse = models.NewAlertsResponse(alerts)
@@ -111,10 +113,12 @@ func (as *AlertService) DeleteAlert(id string) (err error) {
 func (as *AlertService) GetAlertsCount(queryParams map[string][]string) (models.AlertsCountResponse, error) {
 	severityCounts, err := as.DB.CountAlertsGroup("severity", queryParams)
 	if err != nil {
+		log.Println(err)
 		return models.AlertsCountResponse{}, err
 	}
 	statusCounts, err := as.DB.CountAlertsGroup("status", queryParams)
 	if err != nil {
+		log.Println(err)
 		return models.AlertsCountResponse{}, err
 	}
 

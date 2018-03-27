@@ -1,6 +1,7 @@
 package rethinkdb
 
 import (
+	"os"
 	"time"
 
 	"github.com/allen13/golerta/app/models"
@@ -8,18 +9,26 @@ import (
 )
 
 type RethinkDB struct {
-	Address           string `toml:"address"`
-	Database          string `toml:"database"`
-	AlertHistoryLimit int    `toml:"alert_history_limit"`
+	Address           string `mapstructure:"address"`
+	Database          string `mapstructure:"database"`
+	AlertHistoryLimit int    `mapstructure:"alert_history_limit"`
 	session           *r.Session
 }
 
 func (re *RethinkDB) Init() error {
 	if re.Address == "" {
-		re.Address = "localhost:28015"
+		if a, ok := os.LookupEnv("GOLERTA_RETHINKDB_ADDRESS"); ok {
+			re.Address = a
+		} else {
+			re.Address = "localhost:28015"
+		}
 	}
 	if re.Database == "" {
-		re.Database = "alerta"
+		if d, ok := os.LookupEnv("GOLERTA_RETHINKDB_DATABASE"); ok {
+			re.Database = d
+		} else {
+			re.Database = "alerta"
+		}
 	}
 	if re.AlertHistoryLimit == 0 {
 		re.AlertHistoryLimit = 100
@@ -27,6 +36,7 @@ func (re *RethinkDB) Init() error {
 
 	return re.connect()
 }
+
 func (re *RethinkDB) connect() error {
 	session, err := r.Connect(r.ConnectOpts{
 		Address: re.Address,
@@ -397,7 +407,7 @@ func (re *RethinkDB) CountAlertsGroup(group string, queryArgs map[string][]strin
 	t := r.DB(re.Database).Table("alerts").Filter(filter).Group(group).Count().Ungroup().Map(
 		r.Object(r.Row.Field("group"), r.Row.Field("reduction"))).Reduce(func(left r.Term, right r.Term) r.Term {
 		return left.Merge(right)
-	})
+	}).Default(func(e r.Term) r.Term {return r.Branch(e.Eq("Cannot reduce over an empty stream."), make(map[string]int), r.Error())})
 
 	res, err := t.Run(re.session)
 	if err != nil {

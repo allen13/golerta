@@ -10,10 +10,10 @@ import (
 )
 
 type Notifiers struct {
-	File              file.File           `toml:"file"`
-	PagerDuty         pagerduty.PagerDuty `toml:"pagerduty"`
-	Email             email.Email         `toml:"email"`
-	TriggerSeverities []string            `toml:"trigger_severities"`
+	File              file.File           `mapstructure:"file"`
+	PagerDuty         pagerduty.PagerDuty `mapstructure:"pagerduty"`
+	Email             email.Email         `mapstructure:"email"`
+	TriggerSeverities []string            `mapstructure:"trigger_severities"`
 	notifiers         []Notifier
 }
 

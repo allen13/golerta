@@ -6,16 +6,16 @@ import (
 )
 
 type FlapDetection struct {
-	Enabled bool `toml:"enabled"`
+	Enabled bool `mapstructure:"enabled"`
 
 	//How many seconds does it take for a timestamp to reach 0.5 flapscore
-	HalfLifeSeconds float64 `toml:"half_life_seconds"`
+	HalfLifeSeconds float64 `mapstructure:"half_life_seconds"`
 
 	//Flap score at which the alert is considered to be flapping
-	Threshold float64 `toml:"threshold"`
+	Threshold float64 `mapstructure:"threshold"`
 
 	//individual severity time change score threshold at which a severity time change is dropped from history
-	MinimumScore float64 `toml:"minimum_score"`
+	MinimumScore float64 `mapstructure:"minimum_score"`
 }
 
 func (f *FlapDetection) Init() {

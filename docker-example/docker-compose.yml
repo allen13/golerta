@@ -1,0 +1,48 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb
+  telegraf:
+    volumes:
+    - ./telegraf.conf:/etc/telegraf/telegraf.conf
+    links:
+    - influxdb
+    image: telegraf
+    depends_on:
+    - influxdb
+  kapacitor:
+    image: kapacitor
+    volumes:
+    - ./kapacitor.conf:/etc/kapacitor/kapacitor.conf
+    links:
+    - influxdb
+    - golerta
+    depends_on:
+    - influxdb
+  chronograf:
+    image: chronograf
+    links:
+    - influxdb
+    - kapacitor
+    ports:
+    - "8888:8888"
+    depends_on:
+    - influxdb
+    - kapacitor
+  rethinkdb:
+    image: rethinkdb
+    ports:
+    - "8080:8080"
+  golerta:
+    build:
+      context: ../
+    volumes:
+    - ./example.toml:/golerta.toml
+    environment:
+    - GOLERTA_RETHINKDB_ADDRESS=rethinkdb:28015
+    ports:
+    - "5608:5608"
+    links:
+    - rethinkdb
+    depends_on:
+    - rethinkdb

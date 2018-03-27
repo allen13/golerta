@@ -12,9 +12,9 @@ import (
 )
 
 type OAuthAuthProvider struct {
-	Host         string `toml:"host"`
-	ClientID     string `toml:"client_id"`
-	ResponseType string `toml:"response_type"`
+	Host         string `mapstructure:"host"`
+	ClientID     string `mapstructure:"client_id"`
+	ResponseType string `mapstructure:"response_type"`
 	signingKey   string
 }
 

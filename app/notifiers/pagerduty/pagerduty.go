@@ -6,8 +6,8 @@ import (
 )
 
 type PagerDuty struct {
-	EnabledField bool   `toml:"enabled"`
-	ServiceKey   string `toml:"service_key"`
+	EnabledField bool   `mapstructure:"enabled"`
+	ServiceKey   string `mapstructure:"service_key"`
 }
 
 func (pd *PagerDuty) Init() error {

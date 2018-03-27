@@ -6,7 +6,7 @@ import (
 
 	"github.com/allen13/golerta/app"
 	"github.com/allen13/golerta/app/auth/token"
-	"github.com/allen13/golerta/app/config"
+	appconfig "github.com/allen13/golerta/app/config"
 	"github.com/docopt/docopt-go"
 )
 
@@ -30,8 +30,14 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	var config appconfig.GolertaConfig
 	configFile := args["--config"].(string)
-	config := config.BuildConfig(configFile)
+	if configFile != "./golerta.toml" {
+		config = appconfig.BuildConfig(configFile)
+	} else {
+		config = appconfig.BuildConfig("golerta")
+	}
 
 	if args["server"].(bool) {
 		echo := app.BuildApp(config)
@@ -39,14 +45,14 @@ func main() {
 
 		var err error
 
-		if config.Golerta.TLSEnabled {
-			if config.Golerta.TLSAutoEnabled {
-				err = echo.StartAutoTLS(config.Golerta.BindAddr)
+		if config.App.TLSEnabled {
+			if config.App.TLSAutoEnabled {
+				err = echo.StartAutoTLS(config.App.BindAddr)
 			} else {
-				err = echo.StartTLS(config.Golerta.BindAddr, config.Golerta.TLSCert, config.Golerta.TLSKey)
+				err = echo.StartTLS(config.App.BindAddr, config.App.TLSCert, config.App.TLSKey)
 			}
 		} else {
-			err = echo.Start(config.Golerta.BindAddr)
+			err = echo.Start(config.App.BindAddr)
 		}
 
 		if err != nil {
@@ -56,6 +62,6 @@ func main() {
 	}
 
 	if args["createAgentToken"].(bool) {
-		fmt.Println(token.CreateExpirationFreeAgentToken(args["<name>"].(string), config.Golerta.SigningKey))
+		fmt.Println(token.CreateExpirationFreeAgentToken(args["<name>"].(string), config.App.SigningKey))
 	}
 }

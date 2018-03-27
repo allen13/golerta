@@ -51,7 +51,7 @@
     <div class="col-md-12">
       <table class="table table-bordered">
         <tr ng-init="predicate = [reverseSeverityCode,'lastReceiveTime']">
-          <th class="text-center"><input type="checkbox" ng-click="checkSelectAll()" ng-model="selectAll" /></th>
+          <th class="text-center"><label class="alertToggle"><input type="checkbox" ng-click="checkSelectAll()" ng-model="selectAll" /></label></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = severityCode; reverse=!reverse">Severity&nbsp;<span ng-hide="predicate != severityCode"><span ng-show="!reverse">v</span><span ng-show="reverse">^</span></span></a></th>
           <th class="hidden-xs"><a href="" ng-click="predicate = 'status'; reverse=!reverse">Status&nbsp;<span ng-hide="predicate != 'status'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
           <th class="hidden-lg"><a href="" ng-click="predicate = 'lastReceiveTime'; reverse=!reverse">Time&nbsp;<span ng-hide="predicate != 'lastReceiveTime'"><span ng-show="!reverse">^</span><span ng-show="reverse">v</span></span></a></th>
@@ -68,17 +68,17 @@
         <tr ng-repeat="alert in alerts | filter:search | orderBy:predicate:reverse | limitTo:alertLimit"
             ng-style="{ 'color':  colors.severity[alert.severity] == 'black' ? 'white' : colors.text, 'background-color': (bulkAlerts.indexOf(alert.id) > -1) ? colors.highlight : colors.severity[alert.severity] || 'silver' }"
             >
-          <td class="text-center"><input type="checkbox" ng-click="alertChecked()" ng-checked="selected" ng-model="alert.selected"/></td>
-          <td class="hidden-xs no-wrap"><i class="glyphicon glyphicon-{{ alert.trendIndication | arrow }}"></i>&nbsp;<span class="label label-{{ alert.severity }}">{{ alert.severity | capitalize }}</span></td>
-          <td class="hidden-xs"><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td>
-          <td class="hidden-lg">{{ alert.lastReceiveTime | date:shortTime }}</td>
-          <td class="visible-lg">{{ alert.lastReceiveTime | date:mediumDate }}</td>
-          <td class="hidden-xs" ng-show="isCustomerViews() && isAdmin();">{{ alert.customer }}</td>
-          <td class="hidden-xs">{{ alert.environment }}</td>
-          <td class="hidden-xs">{{ alert.service.join(', ') }}</td>
-          <td>{{ alert.resource }}</td>
-          <td>{{ alert.event }}</td>
-          <td class="hidden-xs">{{ alert.value|round }}</td>
+          <td class="text-center"><label class="alertToggle"><input type="checkbox" ng-click="alertChecked()" ng-checked="selected" ng-model="alert.selected"/></label></td>
+          <td ng-click="click($event,alert);" class="hidden-xs no-wrap"><i class="glyphicon glyphicon-{{ alert.trendIndication | arrow }}"></i>&nbsp;<span class="label label-{{ alert.severity }}">{{ alert.severity | capitalize }}</span></td>
+          <td ng-click="click($event,alert);" class="hidden-xs"><span class="label label-{{ alert.status }}">{{ alert.status | capitalize }}</span></td>
+          <td ng-click="click($event,alert);" class="hidden-lg">{{ alert.lastReceiveTime | date:shortTime }}</td>
+          <td ng-click="click($event,alert);" class="visible-lg">{{ alert.lastReceiveTime | date:mediumDate }}</td>
+          <td ng-click="click($event,alert);" class="hidden-xs" ng-show="isCustomerViews() && isAdmin();">{{ alert.customer }}</td>
+          <td ng-click="click($event,alert);" class="hidden-xs">{{ alert.environment }}</td>
+          <td ng-click="click($event,alert);" class="hidden-xs">{{ alert.service.join(', ') }}</td>
+          <td ng-click="click($event,alert);">{{ alert.resource }}</td>
+          <td ng-click="click($event,alert);">{{ alert.event }}</td>
+          <td ng-click="click($event,alert);" class="hidden-xs">{{ alert.value|round }}</td>
           <td ng-click="click($event,alert);" class="text-center"><i class="glyphicon glyphicon-menu-right" aria-hidden="true"></i></td>
         </tr>
       </table>
@@ -87,7 +87,7 @@
           <center><img src="img/loading.gif"/></center>
       </div>
 
-      <div ng-show="alerts.length == 0">
+      <div ng-show="message">
           <center>{{ message }}</center>
       </div>
 

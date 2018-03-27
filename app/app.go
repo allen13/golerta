@@ -1,13 +1,16 @@
 package app
 
 import (
+	"log"
+
+	"github.com/labstack/echo"
+	echoMiddleware "github.com/labstack/echo/middleware"
+
 	"github.com/allen13/golerta/app/auth"
 	"github.com/allen13/golerta/app/auth/middleware"
 	"github.com/allen13/golerta/app/config"
 	"github.com/allen13/golerta/app/controllers"
 	"github.com/allen13/golerta/app/services"
-	"github.com/labstack/echo"
-	"log"
 )
 
 func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
@@ -22,7 +25,7 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 
 	continuousQueryService := &services.ContinuousQueryService{
 		DB:            db,
-		QueryInterval: config.Golerta.ContinuousQueryInterval.Duration,
+		QueryInterval: config.App.ContinuousQueryInterval.Duration,
 		Notifiers:     config.Notifiers,
 		FlapDetection: &config.FlapDetection,
 	}
@@ -30,11 +33,22 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 
 	e = echo.New()
 
+	// enable CORS if UI is detached from the golerta process
+	e.Use(echoMiddleware.CORS())
+
 	authProvider := BuildAuthProvider(config)
+
+	shouldSkipAuth := func(_ echo.Context) bool {
+		c := config.App.AuthProvider == "noop"
+		return c
+	}
+
 	authMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:  []byte(config.Golerta.SigningKey),
+		Skipper:     shouldSkipAuth,
+		SigningKey:  []byte(config.App.SigningKey),
 		TokenLookup: "header:Authorization,query:api-key",
 	})
+
 	authController := controllers.AuthController{
 		Echo:         e,
 		AuthProvider: authProvider,
@@ -49,7 +63,7 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 		Echo:             e,
 		AlertService:     alertsService,
 		AuthMiddleware:   authMiddleware,
-		LogAlertRequests: config.Golerta.LogAlertRequests,
+		LogAlertRequests: config.App.LogAlertRequests,
 	}
 	alertsController.Init()
 
@@ -62,11 +76,13 @@ func BuildApp(config config.GolertaConfig) (e *echo.Echo) {
 }
 
 func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvider) {
-	switch config.Golerta.AuthProvider {
+	switch config.App.AuthProvider {
 	case "ldap":
 		authProvider = &config.Ldap
 	case "oauth":
 		authProvider = &config.OAuth
+	case "noop":
+		authProvider = &config.Noop
 	}
 
 	err := authProvider.Connect()
@@ -75,9 +91,9 @@ func BuildAuthProvider(config config.GolertaConfig) (authProvider auth.AuthProvi
 	if err != nil {
 		log.Fatal(err)
 	}
-	if config.Golerta.SigningKey == "" {
+	if config.App.SigningKey == "" {
 		log.Fatal("Shutting down, signing key must be provided.")
 	}
-	authProvider.SetSigningKey(config.Golerta.SigningKey)
+	authProvider.SetSigningKey(config.App.SigningKey)
 	return
 }

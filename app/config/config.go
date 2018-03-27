@@ -1,27 +1,31 @@
 package config
 
 import (
-	"github.com/BurntSushi/toml"
+	"log"
+	"strings"
+	"time"
+
+	"github.com/spf13/viper"
 	"github.com/allen13/golerta/app/algorithms"
 	"github.com/allen13/golerta/app/auth/ldap"
 	"github.com/allen13/golerta/app/auth/oauth"
+	"github.com/allen13/golerta/app/auth/noop"
 	"github.com/allen13/golerta/app/db/rethinkdb"
 	"github.com/allen13/golerta/app/notifiers"
-	"log"
-	"time"
 )
 
 type GolertaConfig struct {
-	Golerta       golerta
+	App           app
 	Ldap          ldap.LDAPAuthProvider
 	OAuth         oauth.OAuthAuthProvider
+	Noop          noop.NoopAuthProvider
 	Rethinkdb     rethinkdb.RethinkDB
 	Notifiers     notifiers.Notifiers
 	FlapDetection algorithms.FlapDetection
 }
 
 type duration struct {
-	time.Duration
+	time.Duration `mapstructure:"continuous_query_interval"`
 }
 
 func (d *duration) UnmarshalText(text []byte) error {
@@ -30,21 +34,34 @@ func (d *duration) UnmarshalText(text []byte) error {
 	return err
 }
 
-type golerta struct {
-	BindAddr                string   `toml:"bind_addr"`
-	SigningKey              string   `toml:"signing_key"`
-	AuthProvider            string   `toml:"auth_provider"`
-	ContinuousQueryInterval duration `toml:"continuous_query_interval"`
-	LogAlertRequests        bool     `toml:"log_alert_requests"`
-	TLSEnabled              bool     `toml:"tls_enabled"`
-	TLSCert                 string   `toml:"tls_cert"`
-	TLSKey                  string   `toml:"tls_key"`
-	TLSAutoEnabled          bool     `toml:"tls_auto_enabled"`
-	TLSAutoHosts            string   `toml:"tls_auto_hosts"`
+type app struct {
+	BindAddr                string   `mapstructure:"bind_addr"`
+	SigningKey              string   `mapstructure:"signing_key"`
+	AuthProvider            string   `mapstructure:"auth_provider"`
+	ContinuousQueryInterval duration
+	LogAlertRequests        bool     `mapstructure:"log_alert_requests"`
+	TLSEnabled              bool     `mapstructure:"tls_enabled"`
+	TLSCert                 string   `mapstructure:"tls_cert"`
+	TLSKey                  string   `mapstructure:"tls_key"`
+	TLSAutoEnabled          bool     `mapstructure:"tls_auto_enabled"`
+	TLSAutoHosts            string   `mapstructure:"tls_auto_hosts"`
 }
 
 func BuildConfig(configFile string) (config GolertaConfig) {
-	_, err := toml.DecodeFile(configFile, &config)
+	viper.SetEnvPrefix("golerta")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	viper.SetConfigName(configFile)
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("/etc/golerta/")
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		log.Fatal("could not read config: " + err.Error())
+	}
+
+	err = viper.Unmarshal(&config)
 
 	if err != nil {
 		log.Fatal("config file error: " + err.Error())
@@ -55,10 +72,10 @@ func BuildConfig(configFile string) (config GolertaConfig) {
 }
 
 func setDefaultConfigs(config *GolertaConfig) {
-	if config.Golerta.AuthProvider == "" {
-		config.Golerta.AuthProvider = "ldap"
+	if config.App.AuthProvider == "" {
+		config.App.AuthProvider = "noop"
 	}
-	if config.Golerta.ContinuousQueryInterval.Duration == 0 {
-		config.Golerta.ContinuousQueryInterval.Duration = time.Second * 5
+	if config.App.ContinuousQueryInterval.Duration == 0 {
+		config.App.ContinuousQueryInterval.Duration = time.Second * 5
 	}
 }
